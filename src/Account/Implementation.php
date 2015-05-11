@@ -2,7 +2,7 @@
   namespace ActiveCollab\Insight\Account;
 
   use ActiveCollab\Insight\Timestamp;
-  use DateTime;
+  use DateTime, DateTimeZone;
 
   trait Implementation
   {
@@ -20,9 +20,15 @@
     {
       $on_date_timestamp = $on_date instanceof DateTime ? $on_date->getTimestamp() : Timestamp::getCurrentTimestamp();
 
+      if ($oldest_property_timestamp = $this->getOldestPropertyValueTimestamp($property_name)) {
+        if ($oldest_property_timestamp->getTimestamp() > $on_date->getTimestamp()) {
+          return null;
+        }
+      }
+
       if (isset($this->properties[$property_name])) {
         foreach ($this->properties[$property_name] as $timestamp => $value) {
-          if ($timestamp > $on_date_timestamp) {
+          if ($on_date_timestamp > $timestamp) {
             return $value;
           }
         }
@@ -39,25 +45,46 @@
      */
     public function setProperty($property_name, $value, DateTime $on_date = null)
     {
-      if (empty($on_date)) {
-        $on_date = Timestamp::now();
-      }
+      $on_date_timestamp = $on_date instanceof DateTime ? $on_date->getTimestamp() : Timestamp::getCurrentTimestamp();
 
       if (empty($this->properties[$property_name])) {
         $this->properties[$property_name] = [];
       }
 
-      $this->properties[$property_name][$on_date->getTimestamp()] = $value;
+      $this->properties[$property_name][$on_date_timestamp] = $value;
 
-      if (count($this->properties) > 1) {
-        krsort($this->properties);
+      if (count($this->properties[$property_name]) > 1) {
+        krsort($this->properties[$property_name]);
+      }
+
+      if (empty($this->property_timestamps[$property_name])) {
+        $this->property_timestamps[$property_name] = [ $on_date_timestamp ];
+      } else {
+        if (!in_array($on_date_timestamp, $this->property_timestamps)) {
+          $this->property_timestamps[$property_name][] = $on_date_timestamp;
+
+          if (count($this->property_timestamps[$property_name]) > 1) {
+            sort($this->property_timestamps[$property_name]);
+          }
+        }
       }
     }
 
     /**
      * @var array
      */
-    private $oldest_property_timestamps = [];
+    private $property_timestamps = [];
+
+    /**
+     * Return a list of property timestamps
+     *
+     * @param  string $property_name
+     * @return int[]
+     */
+    public function getPropertyTimestamps($property_name)
+    {
+      return isset($this->property_timestamps[$property_name]) ? $this->property_timestamps[$property_name] : [];
+    }
 
     /**
      * @param  string        $property_name
@@ -65,11 +92,13 @@
      */
     public function getOldestPropertyValueTimestamp($property_name)
     {
-      if (!array_key_exists($property_name, $this->oldest_property_timestamps)) {
-        
+      if (isset($this->property_timestamps[$property_name])) {
+        $result = new DateTime('now', new DateTimeZone('GMT'));
+        $result->setTimestamp($this->property_timestamps[$property_name][0]);
+        return $result;
+      } else {
+        return null;
       }
-
-      return $this->oldest_property_timestamps[$property_name];
     }
 
     /**
@@ -83,10 +112,12 @@
      */
     public function getLatestPropertyValueTimestamp($property_name)
     {
-      if (!array_key_exists($property_name, $this->latest_property_timestamps)) {
-
+      if (isset($this->property_timestamps[$property_name])) {
+        $result = new DateTime('now', new DateTimeZone('GMT'));
+        $result->setTimestamp($this->property_timestamps[$property_name][count($this->property_timestamps[$property_name]) - 1]);
+        return $result;
+      } else {
+        return null;
       }
-
-      return $this->latest_property_timestamps[$property_name];
     }
   }
