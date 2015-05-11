@@ -13,7 +13,7 @@
      */
     public function testDateSpecificProperty()
     {
-      $account = new Account();
+      $account = new Account($this->redis_namespace, $this->redis_client);
 
       $account->setProperty('plan', 'M', new DateTime('2015-05-01'));
       $account->setProperty('plan', 'L', new DateTime('2015-05-07'));
