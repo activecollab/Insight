@@ -6,6 +6,9 @@
   use Predis\Client;
   use InvalidArgumentException;
 
+  /**
+   * @package ActiveCollab\Insight\Account
+   */
   trait Implementation
   {
     /**
@@ -15,10 +18,14 @@
      */
     public function getProperty($property_name, DateTime $on_date = null)
     {
-      $on_date_timestamp = $on_date instanceof DateTime ? $on_date->getTimestamp() : Timestamp::getCurrentTimestamp();
+      if (empty($on_date)) {
+        $on_date = Timestamp::getCurrentDateTime();
+      }
+
+      $on_date_timestamp = $on_date->format('Y-m-d');
 
       if ($oldest_property_timestamp = $this->getOldestPropertyValueTimestamp($property_name)) {
-        if ($oldest_property_timestamp->getTimestamp() > $on_date->getTimestamp()) {
+        if ((new DateTime($oldest_property_timestamp, new DateTimeZone('GMT')))->getTimestamp() > $on_date->getTimestamp()) {
           return null;
         }
       }
@@ -26,8 +33,10 @@
       $timestamps = $this->getPropertyTimestamps($property_name);
 
       for ($i = count($timestamps) - 1; $i >= 0; $i--) {
-        if ($on_date_timestamp > $timestamps[$i]) {
-          return $this->getRedisClient()->get($this->getPropertyValueKey($property_name, $timestamps[$i]));
+        if (strcmp($on_date_timestamp, $timestamps[$i]) >= 0) {
+          if ($raw_value = $this->getRedisClient()->get($this->getPropertyValueKey($property_name, $timestamps[$i]))) {
+            return unserialize($raw_value);
+          }
         }
       }
 
@@ -46,7 +55,15 @@
      */
     public function setProperty($property_name, $value, DateTime $on_date = null)
     {
-      $on_date_timestamp = $on_date instanceof DateTime ? $on_date->getTimestamp() : Timestamp::getCurrentTimestamp();
+      if ($this->getProperty($property_name, $on_date) === $value) {
+        return;
+      }
+
+      if (empty($on_date)) {
+        $on_date = Timestamp::getCurrentDateTime();
+      }
+
+      $on_date_timestamp = $on_date->format('Y-m-d');
 
       $existing_property_timestamps = $this->getPropertyTimestamps($property_name);
 
@@ -54,7 +71,7 @@
         $property_value_key = $this->getPropertyValueKey($property_name, $on_date_timestamp);
 
         /** @var $t Client */
-        $t->set($this->getPropertyValueKey($property_name, $on_date_timestamp), $value);
+        $t->set($this->getPropertyValueKey($property_name, $on_date_timestamp), serialize($value));
 
         if (!in_array($property_value_key, $existing_property_timestamps)) {
           $existing_property_timestamps[] = $on_date_timestamp;
@@ -79,45 +96,45 @@
       $timestamps_key = $this->getPropertyTimestampsKey($property_name);
 
       if ($this->getRedisClient()->exists($timestamps_key)) {
-        return array_map('intval', explode(',', $this->getRedisClient()->get($timestamps_key)));
+        return explode(',', $this->getRedisClient()->get($timestamps_key));
       } else {
         return [];
       }
     }
 
     /**
-     * @param  string        $property_name
-     * @return DateTime|null
+     * @param  string      $property_name
+     * @return string|null
      */
     public function getOldestPropertyValueTimestamp($property_name)
     {
       $oldest_property_value_timestamp_key = $this->getOldestPropertyValueTimestampKey($property_name);
 
       if ($this->getRedisClient()->exists($oldest_property_value_timestamp_key)) {
-        $result = new DateTime('now', new DateTimeZone('GMT'));
-        $result->setTimestamp((integer) $this->getRedisClient()->get($oldest_property_value_timestamp_key));
-        return $result;
+        return $this->getRedisClient()->get($oldest_property_value_timestamp_key);
       } else {
         return null;
       }
     }
 
     /**
-     * @param  string        $property_name
-     * @return DateTime|null
+     * @param  string      $property_name
+     * @return string|null
      */
     public function getLatestPropertyValueTimestamp($property_name)
     {
       $latest_property_value_timestamp_key = $this->getLatestPropertyValueTimestampKey($property_name);
 
       if ($this->getRedisClient()->exists($latest_property_value_timestamp_key)) {
-        $result = new DateTime('now', new DateTimeZone('GMT'));
-        $result->setTimestamp((integer) $this->getRedisClient()->get($latest_property_value_timestamp_key));
-        return $result;
+        return $this->getRedisClient()->get($latest_property_value_timestamp_key);
       } else {
         return null;
       }
     }
+
+    // ---------------------------------------------------
+    //  Property keys
+    // ---------------------------------------------------
 
     /**
      * Return property value key for the given property and timestamp
@@ -128,7 +145,7 @@
      */
     private function getPropertyValueKey($property_name, $timestamp)
     {
-      if (is_int($timestamp) && $timestamp > 0) {
+      if (is_string($timestamp)) {
         return $this->getRedisKey("prop:$property_name:$timestamp");
       } else {
         throw new \InvalidArgumentException('Invalid timestamp');

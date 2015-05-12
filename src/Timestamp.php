@@ -39,6 +39,30 @@
     }
 
     /**
+     * Return DateTime instances based on the current timestamp
+     *
+     * @return DateTime
+     */
+    public static function getCurrentDateTime()
+    {
+      $result = new DateTime('now', new DateTimeZone('GMT'));
+      $result->setTimestamp(self::getCurrentTimestamp());
+
+      return $result;
+    }
+
+    /**
+     * Return formatted current timestamp
+     *
+     * @param  string $format
+     * @return string
+     */
+    public static function formatCurrentTimestamp($format)
+    {
+      return self::$current_timestamp ? date($format, self::$current_timestamp) : date($format);
+    }
+
+    /**
      * Return true if current timestamp is locked
      *
      * @return bool

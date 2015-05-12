@@ -13,14 +13,14 @@
     public function getInsightAccountId();
 
     /**
-     * @param  string        $property_name
-     * @return DateTime|null
+     * @param  string      $property_name
+     * @return string|null
      */
     public function getOldestPropertyValueTimestamp($property_name);
 
     /**
-     * @param  string        $property_name
-     * @return DateTime|null
+     * @param  string      $property_name
+     * @return string|null
      */
     public function getLatestPropertyValueTimestamp($property_name);
 
