@@ -20,7 +20,7 @@
     {
       parent::setUp();
 
-      $this->account = new Account($this->redis_namespace, $this->redis_client);
+      $this->account = new Account($this->redis_client);
     }
 
     /**

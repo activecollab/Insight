@@ -225,6 +225,16 @@
       return trim($result, ':');
     }
 
+    /**
+     * Return namespace that is used to prefix Insight database entries
+     *
+     * @return string
+     */
+    protected function getInsightRedisNamespace()
+    {
+      return 'i';
+    }
+
     // ---------------------------------------------------
     //  Expectations
     // ---------------------------------------------------
@@ -233,13 +243,6 @@
      * @return int
      */
     abstract public function getInsightAccountId();
-
-    /**
-     * Return namespace that is used to prefix Insight database entries
-     *
-     * @return string
-     */
-    abstract protected function getInsightRedisNamespace();
 
     /**
      * @return Client

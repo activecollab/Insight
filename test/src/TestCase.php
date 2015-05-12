@@ -15,11 +15,6 @@
     protected $current_timestamp;
 
     /**
-     * @var string
-     */
-    protected $redis_namespace = 'i';
-
-    /**
      * @var Client
      */
     protected $redis_client;

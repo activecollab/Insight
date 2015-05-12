@@ -3,6 +3,9 @@
 
   use DateTime;
 
+  /**
+   * @package ActiveCollab\Insight
+   */
   interface Account
   {
     /**
