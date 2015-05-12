@@ -34,13 +34,34 @@
 
       for ($i = count($timestamps) - 1; $i >= 0; $i--) {
         if (strcmp($on_date_timestamp, $timestamps[$i]) >= 0) {
-          if ($raw_value = $this->getRedisClient()->get($this->getPropertyValueKey($property_name, $timestamps[$i]))) {
+          if ($raw_value = $this->getInsightRedisClient()->get($this->getPropertyValueKey($property_name, $timestamps[$i]))) {
             return unserialize($raw_value);
           }
         }
       }
 
       return null;
+    }
+
+    /**
+     * Return property history (key is date)
+     *
+     * @param  string $property_name
+     * @return array
+     */
+    public function getPropertyHistory($property_name)
+    {
+      $result = [];
+
+      foreach ($this->getPropertyTimestamps($property_name) as $timestamp) {
+        if ($raw_value = $this->getInsightRedisClient()->get($this->getPropertyValueKey($property_name, $timestamp))) {
+          $result[$timestamp] = unserialize($raw_value);
+        } else {
+          $result[$timestamp] = null;
+        }
+      }
+
+      return $result;
     }
 
     /**
@@ -67,7 +88,7 @@
 
       $existing_property_timestamps = $this->getPropertyTimestamps($property_name);
 
-      $this->getRedisClient()->transaction(function($t) use ($property_name, $value, $on_date_timestamp, $existing_property_timestamps) {
+      $this->getInsightRedisClient()->transaction(function($t) use ($property_name, $value, $on_date_timestamp, $existing_property_timestamps) {
         $property_value_key = $this->getPropertyValueKey($property_name, $on_date_timestamp);
 
         /** @var $t Client */
@@ -95,8 +116,8 @@
     {
       $timestamps_key = $this->getPropertyTimestampsKey($property_name);
 
-      if ($this->getRedisClient()->exists($timestamps_key)) {
-        return explode(',', $this->getRedisClient()->get($timestamps_key));
+      if ($this->getInsightRedisClient()->exists($timestamps_key)) {
+        return explode(',', $this->getInsightRedisClient()->get($timestamps_key));
       } else {
         return [];
       }
@@ -110,8 +131,8 @@
     {
       $oldest_property_value_timestamp_key = $this->getOldestPropertyValueTimestampKey($property_name);
 
-      if ($this->getRedisClient()->exists($oldest_property_value_timestamp_key)) {
-        return $this->getRedisClient()->get($oldest_property_value_timestamp_key);
+      if ($this->getInsightRedisClient()->exists($oldest_property_value_timestamp_key)) {
+        return $this->getInsightRedisClient()->get($oldest_property_value_timestamp_key);
       } else {
         return null;
       }
@@ -125,8 +146,8 @@
     {
       $latest_property_value_timestamp_key = $this->getLatestPropertyValueTimestampKey($property_name);
 
-      if ($this->getRedisClient()->exists($latest_property_value_timestamp_key)) {
-        return $this->getRedisClient()->get($latest_property_value_timestamp_key);
+      if ($this->getInsightRedisClient()->exists($latest_property_value_timestamp_key)) {
+        return $this->getInsightRedisClient()->get($latest_property_value_timestamp_key);
       } else {
         return null;
       }
@@ -193,7 +214,7 @@
      */
     public function getRedisKey($sub = null)
     {
-      $result = $this->getRedisNamespace() . ':acc:' . $this->getInsightAccountId();
+      $result = $this->getInsightRedisNamespace() . ':acc:' . $this->getInsightAccountId();
 
       if (is_string($sub) && $sub) {
         $result .= substr($sub, 0, 1) == ':' ? $sub : ':' . $sub;
@@ -218,10 +239,10 @@
      *
      * @return string
      */
-    abstract protected function getRedisNamespace();
+    abstract protected function getInsightRedisNamespace();
 
     /**
      * @return Client
      */
-    abstract protected function &getRedisClient();
+    abstract protected function &getInsightRedisClient();
   }

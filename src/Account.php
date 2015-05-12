@@ -32,6 +32,14 @@
     public function getProperty($property_name, DateTime $on_date = null);
 
     /**
+     * Return property history (key is date)
+     *
+     * @param  string $property_name
+     * @return array
+     */
+    public function getPropertyHistory($property_name);
+
+    /**
      * @param string   $property_name
      * @param mixed    $value
      * @param DateTime $on_date

@@ -55,7 +55,7 @@
      *
      * @return string
      */
-    protected function getRedisNamespace()
+    protected function getInsightRedisNamespace()
     {
       return $this->redis_namespace;
     }
@@ -63,7 +63,7 @@
     /**
      * @return Client
      */
-    protected function &getRedisClient()
+    protected function &getInsightRedisClient()
     {
       return $this->redis_client;
     }
