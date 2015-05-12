@@ -1,5 +1,5 @@
 <?php
-  namespace ActiveCollab\Insight;
+  namespace ActiveCollab\Insight\Utilities;
 
   use DateTime, DateTimeZone, InvalidArgumentException;
 

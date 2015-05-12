@@ -1,7 +1,7 @@
 <?php
-  namespace ActiveCollab\Insight\Account;
+  namespace ActiveCollab\Insight\Properties;
 
-  use ActiveCollab\Insight\Timestamp;
+  use ActiveCollab\Insight\Utilities\Timestamp;
   use DateTime, DateTimeZone;
   use Predis\Client;
   use InvalidArgumentException;
@@ -206,46 +206,20 @@
       return $this->getRedisKey("prop:$property_name:timestamps:max");
     }
 
+    // ---------------------------------------------------
+    //  Expectations
+    // ---------------------------------------------------
+
+    /**
+     * @return Client
+     */
+    abstract protected function &getInsightRedisClient();
+
     /**
      * Return Redis key for the given account and subkey
      *
      * @param  string|array|null $sub
      * @return string
      */
-    public function getRedisKey($sub = null)
-    {
-      $result = $this->getInsightRedisNamespace() . ':acc:' . $this->getInsightAccountId();
-
-      if (is_string($sub) && $sub) {
-        $result .= substr($sub, 0, 1) == ':' ? $sub : ':' . $sub;
-      } else if (is_array($sub) && count($sub)) {
-        $result .= ':' . implode(':', $sub);
-      }
-
-      return trim($result, ':');
-    }
-
-    /**
-     * Return namespace that is used to prefix Insight database entries
-     *
-     * @return string
-     */
-    protected function getInsightRedisNamespace()
-    {
-      return 'i';
-    }
-
-    // ---------------------------------------------------
-    //  Expectations
-    // ---------------------------------------------------
-
-    /**
-     * @return int
-     */
-    abstract public function getInsightAccountId();
-
-    /**
-     * @return Client
-     */
-    abstract protected function &getInsightRedisClient();
+    abstract public function getRedisKey($sub = null);
   }

@@ -13,7 +13,7 @@
   ],
   "require" : {
     "php": ">=5.5.0",
-    "ext-mbstring" : "*",
+    "psr/log": "~1.0",
     "activecollab/resistance" : "dev-master"
   },
   "require-dev" : {

@@ -1,7 +1,7 @@
 <?php
   namespace ActiveCollab\Insight\Test;
 
-  use ActiveCollab\Insight\Timestamp;
+  use ActiveCollab\Insight\Utilities\Timestamp;
   use Predis\Client;
 
   /**

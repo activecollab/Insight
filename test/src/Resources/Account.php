@@ -1,16 +1,19 @@
 <?php
   namespace ActiveCollab\Insight\Test;
 
-  use ActiveCollab\Insight\Account as AccountInsight;
-  use ActiveCollab\Insight\Account\Implementation as AccountInsightImplementation;
+  use ActiveCollab\Insight\Properties;
+  use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
+  use ActiveCollab\Insight\SystemLogs;
+  use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
+  use ActiveCollab\Insight\Utilities\Keyspace;
   use Predis\Client;
 
   /**
    * @package ActiveCollab\Insight\Test
    */
-  class Account implements AccountInsight
+  class Account implements Properties, SystemLogs
   {
-    use AccountInsightImplementation;
+    use Keyspace, PropertiesImplementation, SystemLogsImplementation;
 
     /**
      * @var Client
