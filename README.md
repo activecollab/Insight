@@ -19,3 +19,7 @@ Dataset timeline tracks four events:
 4. Deletions (or --) - permanent removal of an object from the database
 
 When these numbers are collected, you should be able to create a timeline where you see how data set changed over time. These changes can indicate how engaged the users are with your product.
+
+## Goals
+
+The difference between goals and events is that goals can be reached only once, and at this point status of a user changes (for exactly, trial user becomes a customer by paying).

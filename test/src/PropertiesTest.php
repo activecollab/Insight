@@ -34,6 +34,27 @@
     }
 
     /**
+     * Test validate property name
+     */
+    public function testValidatePropertyName()
+    {
+      $this->assertTrue($this->account->isValidPropertyName('valid_property_name'));
+      $this->assertTrue($this->account->isValidPropertyName('ValidPropertyName123'));
+      $this->assertTrue($this->account->isValidPropertyName('Valid Property Name'));
+      $this->assertFalse($this->account->isValidPropertyName('something:redis:something'));
+      $this->assertFalse($this->account->isValidPropertyName('InvalidChar*'));
+      $this->assertFalse($this->account->isValidPropertyName('  '));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testExceptionOnInvalidPropetyName()
+    {
+      $this->account->setProperty('Invalid:', 'M');
+    }
+
+    /**
      * Test get / set property
      */
     public function testGetSet()

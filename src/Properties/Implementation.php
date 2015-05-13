@@ -76,6 +76,10 @@
      */
     public function setProperty($property_name, $value, DateTime $on_date = null)
     {
+      if (!$this->isValidPropertyName($property_name)) {
+        throw new InvalidArgumentException("Property name '$property_name' is not valid (letters, numbers, space and underscore are allowed)");
+      }
+
       if ($this->getProperty($property_name, $on_date) === $value) {
         return;
       }
@@ -151,6 +155,27 @@
       } else {
         return null;
       }
+    }
+
+    /**
+     * Return true if $property_name is valid
+     *
+     * @param  string $property_name
+     * @return bool
+     */
+    public function isValidPropertyName($property_name)
+    {
+      if (is_string($property_name)) {
+        if ($property_name = trim($property_name)) {
+          $len = mb_strlen($property_name);
+
+          if ($len > 0 && $len <= 50) {
+            return (boolean)preg_match("/^([a-zA-Z0-9_\s]*)$/", $property_name);
+          }
+        }
+      }
+
+      return false;
     }
 
     // ---------------------------------------------------
