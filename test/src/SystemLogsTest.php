@@ -76,6 +76,36 @@
     }
 
     /**
+     * Test if log iterator is working propertly
+     */
+    public function testLogIteractor()
+    {
+      $current_timestamp = Timestamp::getCurrentTimestamp();
+
+      for ($i = 1; $i <= 11; $i++) {
+        $current_timestamp = Timestamp::lock($current_timestamp + 1);
+
+        $this->account->info("Event {$i}");
+      }
+
+      $this->assertEquals(11, $this->account->getLogSize());
+
+      $last_5 = [];
+
+      $this->account->iterateLog(function($record, $iteration) use (&$current_timestamp, &$last_5) {
+        $this->assertEquals($current_timestamp--, $record['timestamp']);
+
+        $last_5[] = $record['message'];
+
+        return $iteration === 5 ? false : null;
+      });
+
+      $this->assertCount(5, $last_5);
+      $this->assertEquals('Event 11', $last_5[0]);
+      $this->assertEquals('Event 7', $last_5[4]);
+    }
+
+    /**
      * Test log pagination
      */
     public function testLogPagination()
@@ -148,5 +178,21 @@
 
       $this->assertEquals(0, $this->redis_client->zcount($this->account->getLogRecordsKey(), $old_timestamp, $old_timestamp));
       $this->assertEquals(1, $this->redis_client->zcount($this->account->getLogRecordsKey(), $new_timestamp, $new_timestamp));
+    }
+
+    /**
+     * Make sure that references to the old records are cleaned up on new record
+     */
+    public function testSkipOldRecords()
+    {
+      Timestamp::lock(strtotime('-14 days')); // old
+
+      $this->account->info('Log entry #1');
+
+      Timestamp::lock();
+
+      $this->account->info('Log entry #2');
+
+      $this->assertCount(1, $this->account->getLog());
     }
   }

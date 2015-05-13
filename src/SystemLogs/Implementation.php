@@ -22,19 +22,14 @@
      */
     public function getLog($page = 1, $per_page = 100)
     {
-      $this->cleanUpRecordsFromExpiredHashes();
-
       $result = [];
 
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), ($page - 1) * $per_page, $page * $per_page - 1) as $hash) {
-        $record = $this->getInsightRedisClient()->hmget($this->getLogRecordKey($hash), [ 'level', 'message', 'context' ]);
-
-        $result[] = [
-          'hash' => $hash,
-          'level' => $record[0],
-          'message' => $record[1],
-          'context' => unserialize($record[2]),
-        ];
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), ($page - 1) * $per_page, $page * $per_page - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+        if ($record = $this->getRecordByHash($hash, $timestamp)) {
+          $result[] = $record;
+        } else {
+          break;
+        }
       }
 
       return $result;
@@ -48,6 +43,60 @@
     public function getLogSize()
     {
       return $this->getInsightRedisClient()->zcard($this->getLogRecordsKey());
+    }
+
+    /**
+     * Iterate over log entries
+     *
+     * Two arguments are sent to the callback:
+     *
+     * 1. $record - array with record details
+     * 2. $iteration - current iteration #, starting from 1
+     *
+     * System breaks when it fails to find a record or when callback returns FALSE.
+     *
+     * @param callable $callback
+     */
+    public function iterateLog(callable $callback)
+    {
+      $iteration = 0;
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->getLogSize() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+        if ($record = $this->getRecordByHash($hash, $timestamp)) {
+          $callback_result = call_user_func($callback, $record, ++$iteration);
+
+          if ($callback_result === false) {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+    }
+
+    /**
+     * Load record details by hash
+     *
+     * @param  string     $hash
+     * @param  integer    $timestamp
+     * @return array|null
+     */
+    private function getRecordByHash($hash, $timestamp)
+    {
+      $record_key = $this->getLogRecordKey($hash);
+
+      if ($this->getInsightRedisClient()->exists($record_key)) {
+        $record = $this->getInsightRedisClient()->hmget($record_key, [ 'level', 'message', 'context' ]);
+
+        return [
+          'timestamp' => $timestamp, 
+          'hash' => $hash,
+          'level' => $record[0],
+          'message' => $record[1],
+          'context' => unserialize($record[2]),
+        ];
+      } else {
+        return null;
+      }
     }
 
     /**
