@@ -22,7 +22,7 @@
      *
      * @return integer
      */
-    public function getLogSize();
+    public function countLogs();
 
     /**
      * Iterate over log entries, for newest to oldest
@@ -36,5 +36,5 @@
      *
      * @param callable $callback
      */
-    public function forEachLogRecord(callable $callback);
+    public function forEachLog(callable $callback);
   }

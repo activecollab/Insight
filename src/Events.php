@@ -1,15 +1,21 @@
 <?php
   namespace ActiveCollab\Insight;
 
-  use Psr\Log\LoggerInterface;
-
   /**
    * @package ActiveCollab\Insight
    */
-  interface Events extends LoggerInterface
+  interface Events
   {
     /**
-     * Paginate log entries
+     * Log an event
+     *
+     * @param string $event
+     * @param array  $context
+     */
+    public function logEvent($event, array $context = []);
+
+    /**
+     * Paginate events
      *
      * @param  int   $page
      * @param  int   $per_page

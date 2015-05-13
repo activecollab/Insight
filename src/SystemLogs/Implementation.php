@@ -40,7 +40,7 @@
      *
      * @return integer
      */
-    public function getLogSize()
+    public function countLogs()
     {
       return $this->getInsightRedisClient()->zcard($this->getLogRecordsKey());
     }
@@ -57,10 +57,10 @@
      *
      * @param callable $callback
      */
-    public function forEachLogRecord(callable $callback)
+    public function forEachLog(callable $callback)
     {
       $iteration = 0;
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->getLogSize() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->countLogs() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
         if ($record = $this->getRecordByHash($hash, $timestamp)) {
           $callback_result = call_user_func($callback, $record, ++$iteration);
 
@@ -189,7 +189,7 @@
      */
     public function getLogRecordsKey()
     {
-      return $this->getRedisKey('log:records');
+      return $this->getRedisKey('log:hashes');
     }
 
     /**

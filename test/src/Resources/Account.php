@@ -3,6 +3,8 @@
 
   use ActiveCollab\Insight\Properties;
   use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
+  use ActiveCollab\Insight\Events;
+  use ActiveCollab\Insight\Events\Implementation as EventsImplementation;
   use ActiveCollab\Insight\SystemLogs;
   use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
   use ActiveCollab\Insight\DataSetTimeline;
@@ -13,9 +15,9 @@
   /**
    * @package ActiveCollab\Insight\Test
    */
-  class Account implements Properties, SystemLogs, DataSetTimeline
+  class Account implements Properties, Events, SystemLogs, DataSetTimeline
   {
-    use Keyspace, PropertiesImplementation, SystemLogsImplementation, DataSetTimelineImplementation;
+    use Keyspace, PropertiesImplementation, EventsImplementation, SystemLogsImplementation, DataSetTimelineImplementation;
 
     /**
      * @var Client

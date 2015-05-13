@@ -50,7 +50,7 @@
       $this->account->warning('Something odd is happening here');
       $this->account->info('Email sent');
 
-      $this->assertEquals(3, $this->account->getLogSize());
+      $this->assertEquals(3, $this->account->countLogs());
     }
 
     /**
@@ -88,11 +88,11 @@
         $this->account->info("Event {$i}");
       }
 
-      $this->assertEquals(11, $this->account->getLogSize());
+      $this->assertEquals(11, $this->account->countLogs());
 
       $last_5 = [];
 
-      $this->account->forEachLogRecord(function($record, $iteration) use (&$current_timestamp, &$last_5) {
+      $this->account->forEachLog(function($record, $iteration) use (&$current_timestamp, &$last_5) {
         $this->assertEquals($current_timestamp--, $record['timestamp']);
 
         $last_5[] = $record['message'];
