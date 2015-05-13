@@ -46,7 +46,7 @@
     }
 
     /**
-     * Iterate over log entries
+     * Iterate over log entries, for newest to oldest
      *
      * Two arguments are sent to the callback:
      *

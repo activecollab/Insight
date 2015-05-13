@@ -23,4 +23,18 @@
      * @return integer
      */
     public function getLogSize();
+
+    /**
+     * Iterate over log entries, for newest to oldest
+     *
+     * Two arguments are sent to the callback:
+     *
+     * 1. $record - array with record details
+     * 2. $iteration - current iteration #, starting from 1
+     *
+     * System breaks when it fails to find a record or when callback returns FALSE.
+     *
+     * @param callable $callback
+     */
+    public function iterateLog(callable $callback);
   }
