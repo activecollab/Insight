@@ -57,7 +57,7 @@
      *
      * @param callable $callback
      */
-    public function iterateLog(callable $callback)
+    public function forEachLogRecord(callable $callback)
     {
       $iteration = 0;
       foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->getLogSize() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {

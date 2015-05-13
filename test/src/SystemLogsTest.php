@@ -92,7 +92,7 @@
 
       $last_5 = [];
 
-      $this->account->iterateLog(function($record, $iteration) use (&$current_timestamp, &$last_5) {
+      $this->account->forEachLogRecord(function($record, $iteration) use (&$current_timestamp, &$last_5) {
         $this->assertEquals($current_timestamp--, $record['timestamp']);
 
         $last_5[] = $record['message'];

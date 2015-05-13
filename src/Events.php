@@ -6,7 +6,7 @@
   /**
    * @package ActiveCollab\Insight
    */
-  interface SystemLogs extends LoggerInterface
+  interface Events extends LoggerInterface
   {
     /**
      * Paginate log entries
@@ -15,26 +15,24 @@
      * @param  int   $per_page
      * @return array
      */
-    public function getLog($page = 1, $per_page = 100);
+    public function getEvents($page = 1, $per_page = 100);
 
     /**
-     * Return number of log records that are in the log
+     * Return number of events that are logged
      *
      * @return integer
      */
-    public function getLogSize();
+    public function countEvents();
 
     /**
-     * Iterate over log entries, for newest to oldest
+     * Iterate over events, for newest to oldest
      *
      * Two arguments are sent to the callback:
      *
-     * 1. $record - array with record details
+     * 1. $event - array with event details
      * 2. $iteration - current iteration #, starting from 1
-     *
-     * System breaks when it fails to find a record or when callback returns FALSE.
      *
      * @param callable $callback
      */
-    public function forEachLogRecord(callable $callback);
+    public function forEachEvent(callable $callback);
   }
