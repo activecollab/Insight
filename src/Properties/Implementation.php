@@ -194,7 +194,7 @@
       if (is_string($timestamp)) {
         return $this->getRedisKey("prop:$property_name:$timestamp");
       } else {
-        throw new \InvalidArgumentException('Invalid timestamp');
+        throw new InvalidArgumentException('Invalid timestamp');
       }
     }
 
