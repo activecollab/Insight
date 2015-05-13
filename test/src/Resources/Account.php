@@ -5,15 +5,17 @@
   use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
   use ActiveCollab\Insight\SystemLogs;
   use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
+  use ActiveCollab\Insight\DataSetTimeline;
+  use ActiveCollab\Insight\DataSetTimeline\Implementation as DataSetTimelineImplementation;
   use ActiveCollab\Insight\Utilities\Keyspace;
   use Predis\Client;
 
   /**
    * @package ActiveCollab\Insight\Test
    */
-  class Account implements Properties, SystemLogs
+  class Account implements Properties, SystemLogs, DataSetTimeline
   {
-    use Keyspace, PropertiesImplementation, SystemLogsImplementation;
+    use Keyspace, PropertiesImplementation, SystemLogsImplementation, DataSetTimelineImplementation;
 
     /**
      * @var Client

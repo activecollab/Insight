@@ -9,6 +9,15 @@
   interface DataSetTimeline
   {
     /**
+     * Build timeline for the given time range (dates are inclusive)
+     *
+     * @param  DateTime $from
+     * @param  DateTime $to
+     * @return array
+     */
+    public function getTimeline(DateTime $from, DateTime $to);
+
+    /**
      * Set timeline values for the given date
      *
      * @param DateTime $date
@@ -17,7 +26,7 @@
      * @param int      $archives
      * @param int      $deletions
      */
-    public function timelineSetChangesForDate(DateTime $date, $additions, $unarchives, $archives, $deletions);
+    public function setTimelineDataForDate(DateTime $date, $additions, $unarchives, $archives, $deletions);
 
     /**
      * Increment number of additions for the given date
