@@ -130,4 +130,23 @@
       $this->assertNotEquals(-2, $ttl);
       $this->assertEquals(604800, $ttl);
     }
+
+    /**
+     * Make sure that references to the old records are cleaned up on new record
+     */
+    public function testLogRecordsCleanupOnNewRecord()
+    {
+      $old_timestamp = Timestamp::lock(strtotime('-14 days')); // old
+
+      $this->account->info('Log entry #1');
+
+      $this->assertEquals(1, $this->redis_client->zcount($this->account->getLogRecordsKey(), $old_timestamp, $old_timestamp));
+
+      $new_timestamp = Timestamp::lock();
+
+      $this->account->info('Log entry #2');
+
+      $this->assertEquals(0, $this->redis_client->zcount($this->account->getLogRecordsKey(), $old_timestamp, $old_timestamp));
+      $this->assertEquals(1, $this->redis_client->zcount($this->account->getLogRecordsKey(), $new_timestamp, $new_timestamp));
+    }
   }

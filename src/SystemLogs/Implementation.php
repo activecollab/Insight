@@ -22,6 +22,8 @@
      */
     public function getLog($page = 1, $per_page = 100)
     {
+      $this->cleanUpRecordsFromExpiredHashes();
+
       $result = [];
 
       foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), ($page - 1) * $per_page, $page * $per_page - 1) as $hash) {
@@ -62,28 +64,29 @@
         $log_record_key = $this->getLogRecordKey($log_record_hash);
       } while ($this->getInsightRedisClient()->exists($log_record_key));
 
-      $this->getInsightRedisClient()->transaction(function($t) use ($level, $message, $context, $log_record_hash, $log_record_key) {
-        foreach ($context as $k => $v) {
-          $search = $replace = [];
+      foreach ($context as $k => $v) {
+        $search = $replace = [];
 
-          if (strpos($message, '{' . $k . '}') !== false) {
-            $search[] = '{' . $k . '}';
-            $replace[] = '<span data-prop="' . $k . '">' . $v . '</span>';
+        if (strpos($message, '{' . $k . '}') !== false) {
+          $search[] = '{' . $k . '}';
+          $replace[] = '<span data-prop="' . $k . '">' . $v . '</span>';
 
-            unset($context[$k]);
-          }
-
-          if (count($search) && count($replace)) {
-            $message = str_replace($search, $replace, $message);
-          }
+          unset($context[$k]);
         }
 
-        if (isset($context['timestamp']) && $context['timestamp']) {
-          $timestamp = $context['timestamp'];
-          unset($context['timestamp']);
-        } else {
-          $timestamp = Timestamp::getCurrentTimestamp();
+        if (count($search) && count($replace)) {
+          $message = str_replace($search, $replace, $message);
         }
+      }
+
+      if (isset($context['timestamp']) && $context['timestamp']) {
+        $timestamp = $context['timestamp'];
+        unset($context['timestamp']);
+      } else {
+        $timestamp = Timestamp::getCurrentTimestamp();
+      }
+
+      $this->getInsightRedisClient()->transaction(function($t) use ($level, $message, $context, $timestamp, $log_record_hash, $log_record_key) {
 
         /** @var $t Client */
         $t->hmset($log_record_key, [
@@ -98,6 +101,16 @@
 
         $t->zadd($this->getLogRecordsKey(), [ $log_record_hash => $timestamp ]);
       });
+
+      $this->cleanUpRecordsFromExpiredHashes();
+    }
+
+    /**
+     * Expire records that are older than TTL from the records list
+     */
+    private function cleanUpRecordsFromExpiredHashes()
+    {
+      $this->getInsightRedisClient()->zremrangebyscore($this->getLogRecordsKey(), '-inf', Timestamp::getCurrentTimestamp() - $this->getLogTtl());
     }
 
     /**
