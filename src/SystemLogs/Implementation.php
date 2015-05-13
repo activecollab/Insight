@@ -88,7 +88,7 @@
         $record = $this->getInsightRedisClient()->hmget($record_key, [ 'level', 'message', 'context' ]);
 
         return [
-          'timestamp' => $timestamp, 
+          'timestamp' => $timestamp,
           'hash' => $hash,
           'level' => $record[0],
           'message' => $record[1],

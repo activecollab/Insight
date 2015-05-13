@@ -8,3 +8,14 @@ Insight is build around concept of an account that can be enriched with followin
 4. Goals            - set goals and see which accounts reach them
 5. Dataset timeline - track changes to the size of account's dataset (a la Git's ++ and --)
 6. Active users     - track DAU, MAU, YAU
+
+## Dateset timeline
+
+Dataset timeline tracks four events:
+
+1. Additions (or ++) - a new object has been added
+2. Unarchives (or +) - something that was archived is active again
+3. Archives (or -) - something active is now moved to archive (not deleted, but no loger active)
+4. Deletions (or --) - permanent removal of an object from the database
+
+When these numbers are collected, you should be able to create a timeline where you see how data set changed over time. These changes can indicate how engaged the users are with your product.
