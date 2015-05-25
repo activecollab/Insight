@@ -114,4 +114,32 @@
       $this->assertEquals('L', $this->account->getProperty('plan', new DateTime('2015-05-10')));
       $this->assertEquals('XL', $this->account->getProperty('plan', new DateTime('2015-05-12')));
     }
+
+    /**
+     * Test if before property set callback is properly called
+     */
+    public function testBeforePropertySetCallback()
+    {
+      $this->account->setProperty('clean_version_number', '5.6.6-debian');
+      $this->assertEquals('5.6.6', $this->account->getProperty('clean_version_number'));
+    }
+
+    public function testValueSerialization()
+    {
+      $this->account->setProperty('is_cool', true);
+      $this->account->setProperty('is_not_cool', false);
+      $this->account->setProperty('a_number', 12);
+      $this->account->setProperty('a_string', 'abc123');
+      $this->account->setProperty('a_numerical_string', '123');
+      $this->account->setProperty('a_negative_numerical_string', '-123');
+      $this->account->setProperty('an_array', [ 1, 2, 3 ]);
+
+      $this->assertTrue($this->account->getProperty('is_cool'));
+      $this->assertFalse($this->account->getProperty('is_not_cool'));
+      $this->assertSame(12, $this->account->getProperty('a_number'));
+      $this->assertSame('abc123', $this->account->getProperty('a_string'));
+      $this->assertSame(123, $this->account->getProperty('a_numerical_string'));
+      $this->assertSame(-123, $this->account->getProperty('a_negative_numerical_string'));
+      $this->assertSame([ 1, 2, 3 ], $this->account->getProperty('an_array'));
+    }
   }

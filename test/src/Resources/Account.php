@@ -42,6 +42,12 @@
       if ($id) {
         $this->id = $id;
       }
+
+      $this->onBeforeSetProperty('clean_version_number', function(&$value) {
+        if (strpos($value, '-')) {
+          $value = explode('-', $value)[0];
+        }
+      });
     }
 
     /**

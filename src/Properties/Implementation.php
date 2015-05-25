@@ -35,7 +35,7 @@
       for ($i = count($timestamps) - 1; $i >= 0; $i--) {
         if (strcmp($on_date_timestamp, $timestamps[$i]) >= 0) {
           if ($raw_value = $this->getInsightRedisClient()->get($this->getPropertyValueKey($property_name, $timestamps[$i]))) {
-            return unserialize($raw_value);
+            return $this->unserializeRawPropertyValue($raw_value);
           }
         }
       }
@@ -55,7 +55,7 @@
 
       foreach ($this->getPropertyTimestamps($property_name) as $timestamp) {
         if ($raw_value = $this->getInsightRedisClient()->get($this->getPropertyValueKey($property_name, $timestamp))) {
-          $result[$timestamp] = unserialize($raw_value);
+          $result[$timestamp] = $this->unserializeRawPropertyValue($raw_value);
         } else {
           $result[$timestamp] = null;
         }
@@ -65,19 +65,66 @@
     }
 
     /**
+     * Serialize to raw property value
+     *
+     * @param  mixed      $value
+     * @return int|string
+     */
+    private function serializeToRawPropertyValue($value)
+    {
+      if (is_int($value)) {
+        return $value;
+      } else if (is_string($value) && (ctype_digit($value) || substr($value, 0, 1) == '-' && ctype_digit(substr($value, 1)))) {
+        return (integer) $value;
+      } else {
+        return serialize($value);
+      }
+    }
+
+    /**
+     * Unserialize raw property value
+     *
+     * @param  string         $raw_value
+     * @return bool|int|mixed
+     */
+    private function unserializeRawPropertyValue($raw_value)
+    {
+      if ($raw_value === 'b:0;') {
+        return false;
+      } else {
+        $value = @unserialize($raw_value);
+
+        if ($value === false) {
+          return (int) $raw_value;
+        } else {
+          return $value;
+        }
+      }
+    }
+
+    /**
+     * @var callable[]
+     */
+    private $before_set_property = [];
+
+    /**
      * Set property value on the given date
      *
      * If $on_date is not provided, current date is used
      *
-     * @param string   $property_name
-     * @param mixed    $value
-     * @param DateTime $on_date
-     * @param mixed
+     * @param  string                   $property_name
+     * @param  mixed                    $value
+     * @param  DateTime                 $on_date
+     * @throws InvalidArgumentException
      */
     public function setProperty($property_name, $value, DateTime $on_date = null)
     {
       if (!$this->isValidPropertyName($property_name)) {
         throw new InvalidArgumentException("Property name '$property_name' is not valid (letters, numbers, space and underscore are allowed)");
+      }
+
+      if (isset($this->before_set_property[$property_name])) {
+        call_user_func_array($this->before_set_property[$property_name], [ &$value ]);
       }
 
       if ($this->getProperty($property_name, $on_date) === $value) {
@@ -96,7 +143,7 @@
         $property_value_key = $this->getPropertyValueKey($property_name, $on_date_timestamp);
 
         /** @var $t Client */
-        $t->set($this->getPropertyValueKey($property_name, $on_date_timestamp), serialize($value));
+        $t->set($this->getPropertyValueKey($property_name, $on_date_timestamp), $this->serializeToRawPropertyValue($value));
 
         if (!in_array($property_value_key, $existing_property_timestamps)) {
           $existing_property_timestamps[] = $on_date_timestamp;
@@ -108,6 +155,33 @@
           $t->set($this->getLatestPropertyValueTimestampKey($property_name), $existing_property_timestamps[count($existing_property_timestamps) - 1]);
         }
       });
+    }
+
+    /**
+     * Set callback that is called before field value is set
+     *
+     * Value is passed by reference, so it can be modified:
+     *
+     * public function __construct(Client &$redis_client, $id = null)
+     * {
+     *   $this->onBeforeSetProperty('clean_version_number', function(&$value) {
+     *     if (strpos($value, '-')) {
+     *       $value = explode('-', $value)[0];
+     *     }
+     *   });
+     * }
+     *
+     * @param  string                   $property_name
+     * @param  callable                 $callback
+     * @throws InvalidArgumentException
+     */
+    protected function onBeforeSetProperty($property_name, callable $callback)
+    {
+      if (is_callable($callback)) {
+        $this->before_set_property[$property_name] = $callback;
+      } else {
+        throw new InvalidArgumentException('$callback needs to be callable');
+      }
     }
 
     /**
