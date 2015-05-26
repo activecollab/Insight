@@ -56,12 +56,18 @@
      * System breaks when it fails to find a record or when callback returns FALSE.
      *
      * @param callable $callback
+     * @param string[] $include
+     * @param string[] $ignore
      */
-    public function forEachLog(callable $callback)
+    public function forEachLog(callable $callback, array $include = null, array $ignore = null)
     {
       $iteration = 0;
       foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->countLogs() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
         if ($record = $this->getRecordByHash($hash, $timestamp)) {
+          if (!$this->shouldIncludeLogRecord($record['message'], $include) || $this->shouldIgnoreLogRecord($record['message'], $ignore)) {
+            continue;
+          }
+
           $callback_result = call_user_func($callback, $record, ++$iteration);
 
           if ($callback_result === false) {
@@ -71,6 +77,48 @@
           break;
         }
       }
+    }
+
+    /**
+     * Return true if current record should be included based on $include value
+     *
+     * @param  string   $message
+     * @param  string[] $include
+     * @return bool
+     */
+    private function shouldIncludeLogRecord($message, array $include = null)
+    {
+      if (empty($include)) {
+        return true;
+      } else {
+        foreach ($include as $include_string) {
+          if (stripos($message, $include_string) !== false) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+    }
+
+    /**
+     * Return true if current record should be ignored based on ignore value
+     *
+     * @param  string   $message
+     * @param  string[] $ignore
+     * @return bool
+     */
+    private function shouldIgnoreLogRecord($message, array $ignore = null)
+    {
+      if (!empty($ignore)) {
+        foreach ($ignore as $ignore_string) {
+          if (stripos($message, $ignore_string) !== false) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     }
 
     /**

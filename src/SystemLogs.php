@@ -35,6 +35,8 @@
      * System breaks when it fails to find a record or when callback returns FALSE.
      *
      * @param callable $callback
+     * @param string[] $include
+     * @param string[] $ignore
      */
-    public function forEachLog(callable $callback);
+    public function forEachLog(callable $callback, array $include = null, array $ignore = null);
   }

@@ -106,6 +106,75 @@
     }
 
     /**
+     * Test log iterator include filter
+     */
+    public function testLogIteractorIncludeFilter()
+    {
+      $current_timestamp = Timestamp::getCurrentTimestamp();
+
+      foreach ([ 'Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids' ] as $dino) {
+        $current_timestamp = Timestamp::lock($current_timestamp + 1);
+        $this->account->info($dino);
+      }
+
+      $this->assertEquals(6, $this->account->countLogs());
+
+      $filtered_dinos = [];
+
+      $this->account->forEachLog(function($record) use (&$filtered_dinos) {
+        $filtered_dinos[] = $record['message'];
+      }, [ 'Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs' ]);
+
+      $this->assertEquals([ 'Ankylosaurs', 'Raptors', 'Sauropods', 'Tyrannosaurs' ], $filtered_dinos);
+    }
+
+    /**
+     * Test log iterator ignore filter
+     */
+    public function testLogIteractorIgnoreFilter()
+    {
+      $current_timestamp = Timestamp::getCurrentTimestamp();
+
+      foreach ([ 'Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids' ] as $dino) {
+        $current_timestamp = Timestamp::lock($current_timestamp + 1);
+        $this->account->info($dino);
+      }
+
+      $this->assertEquals(6, $this->account->countLogs());
+
+      $filtered_dinos = [];
+
+      $this->account->forEachLog(function($record) use (&$filtered_dinos) {
+        $filtered_dinos[] = $record['message'];
+      }, null, [ 'Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids' ]);
+
+      $this->assertEquals([ 'Sauropods', 'Tyrannosaurs' ], $filtered_dinos);
+    }
+
+    /**
+     * Test log iterator ingclude and ignore filters
+     */
+    public function testLogIteractorIncludeAndIgnoreFilter()
+    {
+      $current_timestamp = Timestamp::getCurrentTimestamp();
+
+      foreach ([ 'Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids' ] as $dino) {
+        $current_timestamp = Timestamp::lock($current_timestamp + 1);
+        $this->account->info($dino);
+      }
+
+      $this->assertEquals(6, $this->account->countLogs());
+
+      $filtered_dinos = [];
+
+      $this->account->forEachLog(function($record) use (&$filtered_dinos) {
+        $filtered_dinos[] = $record['message'];
+      }, [ 'Sauropods', 'Raptors', 'Ankylosaurs' ], [ 'Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids' ]);
+
+      $this->assertEquals([ 'Sauropods' ], $filtered_dinos);
+    }
+
+    /**
      * Test log pagination
      */
     public function testLogPagination()
