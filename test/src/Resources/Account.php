@@ -12,7 +12,7 @@
   use ActiveCollab\Insight\Goals;
   use ActiveCollab\Insight\Goals\Implementation as GoalsImplementation;
   use ActiveCollab\Insight\Utilities\Keyspace;
-  use Predis\Client;
+  use Redis, RedisCluster;
 
   /**
    * @package ActiveCollab\Insight\Test
@@ -22,7 +22,7 @@
     use Keyspace, PropertiesImplementation, EventsImplementation, SystemLogsImplementation, DataSetTimelineImplementation, GoalsImplementation;
 
     /**
-     * @var Client
+     * @var Redis|RedisCluster
      */
     private $redis_client;
 
@@ -32,10 +32,10 @@
     private $id = 1;
 
     /**
-     * @param Client   $redis_client
+     * @param Redis|RedisCluster $redis_client
      * @param int|null $id
      */
-    public function __construct(Client &$redis_client, $id = null)
+    public function __construct(&$redis_client, $id = null)
     {
       $this->redis_client = $redis_client;
 
@@ -59,10 +59,18 @@
     }
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     protected function &getInsightRedisClient()
     {
       return $this->redis_client;
+    }
+
+    /**
+     * @param callable $callback
+     */
+    protected function transaction(callable $callback)
+    {
+      call_user_func_array($callback, [ &$this->redis_client ]);
     }
   }

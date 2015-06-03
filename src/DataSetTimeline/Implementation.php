@@ -2,7 +2,7 @@
   namespace ActiveCollab\Insight\DataSetTimeline;
 
   use DateTime, DateInterval, DatePeriod, LogicException;
-  use Predis\Client;
+  use Redis, RedisCluster;
 
   /**
    * @package ActiveCollab\Insight\DataSetTimeline
@@ -140,7 +140,7 @@
     // ---------------------------------------------------
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     abstract protected function &getInsightRedisClient();
 

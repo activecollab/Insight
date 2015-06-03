@@ -3,7 +3,7 @@
 
   use ActiveCollab\Insight\Utilities\Timestamp;
   use DateTime, DateTimeZone;
-  use Predis\Client;
+  use Redis, RedisCluster;
   use InvalidArgumentException;
 
   /**
@@ -139,10 +139,10 @@
 
       $existing_property_timestamps = $this->getPropertyTimestamps($property_name);
 
-      $this->getInsightRedisClient()->transaction(function($t) use ($property_name, $value, $on_date_timestamp, $existing_property_timestamps) {
+      $this->transaction(function($t) use ($property_name, $value, $on_date_timestamp, $existing_property_timestamps) {
         $property_value_key = $this->getPropertyValueKey($property_name, $on_date_timestamp);
 
-        /** @var $t Client */
+        /** @var $t Redis */
         $t->set($this->getPropertyValueKey($property_name, $on_date_timestamp), $this->serializeToRawPropertyValue($value));
 
         if (!in_array($property_value_key, $existing_property_timestamps)) {
@@ -310,9 +310,14 @@
     // ---------------------------------------------------
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     abstract protected function &getInsightRedisClient();
+
+    /**
+     * @param callable $callback
+     */
+    abstract protected function transaction(callable $callback);
 
     /**
      * Return Redis key for the given account and subkey

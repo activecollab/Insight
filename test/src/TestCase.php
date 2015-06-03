@@ -2,7 +2,7 @@
   namespace ActiveCollab\Insight\Test;
 
   use ActiveCollab\Insight\Utilities\Timestamp;
-  use Predis\Client;
+  use Redis, RedisCluster;
 
   /**
    * @package ActiveCollab\Insight\Test
@@ -15,7 +15,7 @@
     protected $current_timestamp;
 
     /**
-     * @var Client
+     * @var Redis|RedisCluster
      */
     protected $redis_client;
 
@@ -26,7 +26,8 @@
     {
       $this->current_timestamp = Timestamp::lock();
 
-      $this->redis_client = new Client();
+      $this->redis_client = new Redis();
+      $this->redis_client->connect('127.0.0.1', 6379);
       $this->redis_client->select(15);
       $this->redis_client->flushdb();
     }

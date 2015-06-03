@@ -4,7 +4,7 @@
   use ActiveCollab\Insight\Utilities\Timestamp;
   use Psr\Log\LoggerTrait;
   use LogicException;
-  use Predis\Client;
+  use Redis, RedisCluster;
 
   /**
    * @package ActiveCollab\Insight\SystemLogs
@@ -24,7 +24,7 @@
     {
       $result = [];
 
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), ($page - 1) * $per_page, $page * $per_page - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), ($page - 1) * $per_page, $page * $per_page - 1, true) as $hash => $timestamp) {
         if ($record = $this->getRecordByHash($hash, $timestamp)) {
           $result[] = $record;
         } else {
@@ -62,7 +62,7 @@
     public function forEachLog(callable $callback, array $include = null, array $ignore = null)
     {
       $iteration = 0;
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->countLogs() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getLogRecordsKey(), 0, $this->countLogs() - 1, true) as $hash => $timestamp) {
         if ($record = $this->getRecordByHash($hash, $timestamp)) {
           if (!$this->shouldIncludeLogRecord($record['message'], $include) || $this->shouldIgnoreLogRecord($record['message'], $ignore)) {
             continue;
@@ -138,9 +138,9 @@
         return [
           'timestamp' => $timestamp,
           'hash' => $hash,
-          'level' => $record[0],
-          'message' => $record[1],
-          'context' => unserialize($record[2]),
+          'level' => $record['level'],
+          'message' => $record['message'],
+          'context' => unserialize($record['context']),
         ];
       } else {
         return null;
@@ -183,9 +183,9 @@
         $timestamp = Timestamp::getCurrentTimestamp();
       }
 
-      $this->getInsightRedisClient()->transaction(function($t) use ($level, $message, $context, $timestamp, $log_record_hash, $log_record_key) {
+      $this->transaction(function($t) use ($level, $message, $context, $timestamp, $log_record_hash, $log_record_key) {
 
-        /** @var $t Client */
+        /** @var $t Redis|RedisCluster */
         $t->hmset($log_record_key, [
           'level' => $level,
           'message' => $message,
@@ -196,7 +196,7 @@
           $t->expire($log_record_key, $ttl);
         }
 
-        $t->zadd($this->getLogRecordsKey(), [ $log_record_hash => $timestamp ]);
+        $t->zadd($this->getLogRecordsKey(), $timestamp, $log_record_hash);
       });
 
       $this->cleanUpRecordsFromExpiredHashes();
@@ -256,9 +256,14 @@
     // ---------------------------------------------------
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     abstract protected function &getInsightRedisClient();
+
+    /**
+     * @param callable $callback
+     */
+    abstract protected function transaction(callable $callback);
 
     /**
      * Return Redis key for the given account and subkey

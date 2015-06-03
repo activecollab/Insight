@@ -2,8 +2,8 @@
   namespace ActiveCollab\Insight\Goals;
 
   use ActiveCollab\Insight\Utilities\Timestamp;
-  use Predis\Client;
   use DateTime, DateTimeZone, InvalidArgumentException;
+  use Redis, RedisCluster;
 
   trait Implementation
   {
@@ -49,7 +49,7 @@
       if ($goals_reached_count = $this->countGoalsReached()) {
         $gmt = new DateTimeZone('GMT');
 
-        foreach ($this->getInsightRedisClient()->zrange($this->getGoalsKey(), 0, $goals_reached_count - 1, [ 'withscores' => true ]) as $goal_name => $timestamp) {
+        foreach ($this->getInsightRedisClient()->zrange($this->getGoalsKey(), 0, $goals_reached_count - 1, true) as $goal_name => $timestamp) {
           $result[$goal_name] = (new DateTime('now', $gmt))->setTimestamp($timestamp);
         }
       }
@@ -68,10 +68,8 @@
       if ($this->isValidGoalName($goal_name)) {
         $goals_key = $this->getGoalsKey();
 
-        if ($this->getInsightRedisClient()->zrank($goals_key, $goal_name) === null) {
-          $this->getInsightRedisClient()->zadd($goals_key, [
-            $goal_name => $date instanceof DateTime ? $date->getTimestamp() : Timestamp::getCurrentTimestamp()
-          ]);
+        if ($this->getInsightRedisClient()->zrank($goals_key, $goal_name) === false) {
+          $this->getInsightRedisClient()->zadd($goals_key, ($date instanceof DateTime ? $date->getTimestamp() : Timestamp::getCurrentTimestamp()), $goal_name);
         }
       } else {
         throw new InvalidArgumentException("Goal name '$goal_name' is not valid (letters, numbers, space and underscore are allowed)");
@@ -99,6 +97,9 @@
       return false;
     }
 
+    /**
+     * @return string
+     */
     public function getGoalsKey()
     {
       return $this->getRedisKey('goals');
@@ -109,7 +110,7 @@
     // ---------------------------------------------------
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     abstract protected function &getInsightRedisClient();
 

@@ -2,7 +2,7 @@
   namespace ActiveCollab\Insight\Events;
 
   use ActiveCollab\Insight\Utilities\Timestamp;
-  use Predis\Client;
+  use Redis, RedisCluster;
 
   /**
    * @package ActiveCollab\Insight\Events
@@ -20,7 +20,7 @@
     {
       $result = [];
 
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), ($page - 1) * $per_page, $page * $per_page - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), ($page - 1) * $per_page, $page * $per_page - 1, true) as $hash => $timestamp) {
         if ($record = $this->getEventByHash($hash, $timestamp)) {
           $result[] = $record;
         } else {
@@ -54,7 +54,7 @@
     public function forEachEvent(callable $callback)
     {
       $iteration = 0;
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, [ 'withscores' => true ]) as $hash => $timestamp) {
+      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, true) as $hash => $timestamp) {
         if ($record = $this->getEventByHash($hash, $timestamp)) {
           $callback_result = call_user_func($callback, $record, ++$iteration);
 
@@ -84,8 +84,8 @@
         return [
           'timestamp' => $timestamp,
           'hash' => $hash,
-          'event' => $record[0],
-          'context' => unserialize($record[1]),
+          'event' => $record['event'],
+          'context' => unserialize($record['context']),
         ];
       } else {
         return null;
@@ -112,15 +112,15 @@
         $timestamp = Timestamp::getCurrentTimestamp();
       }
 
-      $this->getInsightRedisClient()->transaction(function($t) use ($event, $context, $timestamp, $event_hash, $event_key) {
+      $this->transaction(function($t) use ($event, $context, $timestamp, $event_hash, $event_key) {
 
-        /** @var $t Client */
+        /** @var $t Redis|RedisCluster */
         $t->hmset($event_key, [
           'event' => $event,
           'context' => serialize($context),
         ]);
 
-        $t->zadd($this->getEventsKey(), [ $event_hash => $timestamp ]);
+        $t->zadd($this->getEventsKey(), $timestamp, $event_hash);
       });
     }
 
@@ -148,9 +148,14 @@
     // ---------------------------------------------------
 
     /**
-     * @return Client
+     * @return Redis|RedisCluster
      */
     abstract protected function &getInsightRedisClient();
+
+    /**
+     * @param callable $callback
+     */
+    abstract protected function transaction(callable $callback);
 
     /**
      * Return Redis key for the given account and subkey
