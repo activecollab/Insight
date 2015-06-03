@@ -1,6 +1,6 @@
 # Insight
 
-[![Build Status](https://travis-ci.org/activecollab/insight.svg?branch=master)](https://travis-ci.org/activecollab/insight)
+[![Build Status](https://travis-ci.org/activecollab/Insight.svg?branch=master)](https://travis-ci.org/activecollab/Insight)
 
 Insight is build around concept of an account that can be enriched with following components:
 
