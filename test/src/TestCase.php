@@ -26,10 +26,14 @@
     {
       $this->current_timestamp = Timestamp::lock();
 
-      $this->redis_client = new Redis();
-      $this->redis_client->connect('127.0.0.1', 6379);
-      $this->redis_client->select(15);
-      $this->redis_client->flushdb();
+      if (getenv('TEST_REDIS_CLUSTER')) {
+        $this->redis_client = new RedisCluster(null, [ '127.0.0.1:30001', '127.0.0.1:30002', '127.0.0.1:30003' ]);
+      } else {
+        $this->redis_client = new Redis();
+        $this->redis_client->connect('127.0.0.1');
+      }
+
+      $this->flushData();
     }
 
     /**
@@ -40,6 +44,20 @@
       Timestamp::unlock();
       $this->current_timestamp = null;
 
-      $this->redis_client->flushdb();
+      $this->flushData();
+    }
+
+    /**
+     * Flush data
+     */
+    private function flushData()
+    {
+      if ($this->redis_client instanceof RedisCluster) {
+        foreach($this->redis_client->_masters() as $master) {
+          $this->redis_client->flushAll($master);
+        }
+      } else if ($this->redis_client instanceof Redis) {
+        $this->redis_client->flushdb();
+      }
     }
   }
