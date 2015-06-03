@@ -32,7 +32,7 @@
      */
     protected function getInsightRedisNamespace()
     {
-      return 'i';
+      return '{ins}';
     }
 
     // ---------------------------------------------------
