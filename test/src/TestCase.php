@@ -27,8 +27,10 @@
       $this->current_timestamp = Timestamp::lock();
 
       if (getenv('TEST_REDIS_CLUSTER')) {
+        print "Resistance: Connecting to Redis Cluster...\n";
         $this->redis_client = new RedisCluster(null, [ '127.0.0.1:30001', '127.0.0.1:30002', '127.0.0.1:30003' ]);
       } else {
+        print "Resistance: Connecting to Standalone Redis...\n";
         $this->redis_client = new Redis();
         $this->redis_client->connect('127.0.0.1');
       }
