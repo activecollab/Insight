@@ -9,11 +9,13 @@
  * with this source code in the file LICENSE.
  */
 
-namespace ActiveCollab\Insight\Test;
+namespace ActiveCollab\Insight\Account;
+
+use ActiveCollab\Insight\ElementInterface;
 
 /**
- * @package ActiveCollab\Insight\Test
+ * @package ActiveCollab\Insight\Account
  */
-class StorageTest extends TestCase
+interface AccountElementInterface extends ElementInterface
 {
 }

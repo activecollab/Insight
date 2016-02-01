@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\Insight\Test\Base\TestCase;
 use ActiveCollab\Insight\Utilities\Timestamp;
 
 /**

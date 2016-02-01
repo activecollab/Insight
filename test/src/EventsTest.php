@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\Insight\Test\Base\TestCase;
 use ActiveCollab\Insight\Test\Fixtures\Account;
 use ActiveCollab\Insight\Utilities\Timestamp;
 
@@ -31,7 +32,7 @@ class EventsTest extends TestCase
     {
         parent::setUp();
 
-        $this->account = new Account($this->redis_client);
+        $this->account = new Account($this->storage, 1);
     }
 
     /**

@@ -9,21 +9,16 @@
  * with this source code in the file LICENSE.
  */
 
-namespace ActiveCollab\Insight\Test;
+namespace ActiveCollab\Insight\Test\Base;
 
 use ActiveCollab\DatabaseConnection\Connection\MysqliConnection;
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DateValue\DateTimeValue;
-use ActiveCollab\Insight\Storage;
-use ActiveCollab\Insight\StorageInterface;
-use ActiveCollab\Insight\Utilities\Timestamp;
-use Redis;
-use RedisCluster;
 
 /**
  * @package ActiveCollab\Insight\Test
  */
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class MysqlTestCase extends TestCase
 {
     /**
      * @var \mysqli
@@ -34,16 +29,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      * @var ConnectionInterface
      */
     protected $connection;
-
-    /**
-     * @var StorageInterface
-     */
-    protected $storage;
-
-    /**
-     * @var DateTimeValue
-     */
-    protected $current_timestamp;
 
     /**
      * {@inheritdoc}
@@ -59,10 +44,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         }
 
         $this->connection = new MysqliConnection($this->link);
-        $this->storage = new Storage($this->connection);
-
-        $this->current_timestamp = new DateTimeValue();
-        DateTimeValue::setTestNow($this->current_timestamp);
     }
 
     /**
@@ -70,8 +51,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     public function tearDown()
     {
-        DateTimeValue::setTestNow(null);
-        $this->current_timestamp = null;
+        $this->connection->disconnect();
 
         parent::tearDown();
     }
