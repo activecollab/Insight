@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Active Collab Promises.
+ * This file is part of the Active Collab Insight.
  *
  * (c) A51 doo <info@activecollab.com>
  *
@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace ActiveCollab\Insight;
+namespace ActiveCollab\Insight\Account;
 
 use DateTime;
 

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Active Collab Promises.
+ * This file is part of the Active Collab Insight.
  *
  * (c) A51 doo <info@activecollab.com>
  *
@@ -11,6 +11,11 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\DatabaseConnection\Connection\MysqliConnection;
+use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\Insight\Storage;
+use ActiveCollab\Insight\StorageInterface;
 use ActiveCollab\Insight\Utilities\Timestamp;
 use Redis;
 use RedisCluster;
@@ -21,56 +26,53 @@ use RedisCluster;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var int
+     * @var \mysqli
+     */
+    protected $link;
+
+    /**
+     * @var ConnectionInterface
+     */
+    protected $connection;
+
+    /**
+     * @var StorageInterface
+     */
+    protected $storage;
+
+    /**
+     * @var DateTimeValue
      */
     protected $current_timestamp;
 
     /**
-     * @var Redis|RedisCluster
-     */
-    protected $redis_client;
-
-    /**
-     * Switch to test database.
+     * {@inheritdoc}
      */
     public function setUp()
     {
-        $this->current_timestamp = Timestamp::lock();
+        parent::setUp();
 
-        if (getenv('TEST_REDIS_CLUSTER')) {
-            print "Resistance: Connecting to Redis Cluster...\n";
-            $this->redis_client = new RedisCluster(null, ['127.0.0.1:30001', '127.0.0.1:30002', '127.0.0.1:30003']);
-        } else {
-            print "Resistance: Connecting to Standalone Redis...\n";
-            $this->redis_client = new Redis();
-            $this->redis_client->connect('127.0.0.1');
+        $this->link = new \MySQLi('localhost', 'root', '', 'activecollab_insight_test');
+
+        if ($this->link->connect_error) {
+            throw new \RuntimeException('Failed to connect to database. MySQL said: ' . $this->link->connect_error);
         }
 
-        $this->flushData();
+        $this->connection = new MysqliConnection($this->link);
+        $this->storage = new Storage($this->connection);
+
+        $this->current_timestamp = new DateTimeValue();
+        DateTimeValue::setTestNow($this->current_timestamp);
     }
 
     /**
-     * Tear down test database.
+     * {@inheritdoc}
      */
     public function tearDown()
     {
-        Timestamp::unlock();
+        DateTimeValue::setTestNow(null);
         $this->current_timestamp = null;
 
-        $this->flushData();
-    }
-
-    /**
-     * Flush data.
-     */
-    private function flushData()
-    {
-        if ($this->redis_client instanceof RedisCluster) {
-            foreach ($this->redis_client->_masters() as $master) {
-                $this->redis_client->flushAll($master);
-            }
-        } elseif ($this->redis_client instanceof Redis) {
-            $this->redis_client->flushdb();
-        }
+        parent::tearDown();
     }
 }

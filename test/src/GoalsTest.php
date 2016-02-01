@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Active Collab Promises.
+ * This file is part of the Active Collab Insight.
  *
  * (c) A51 doo <info@activecollab.com>
  *
@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\Insight\Test\Fixtures\Account;
 use DateTime;
 use DateTimeZone;
 

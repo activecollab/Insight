@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Active Collab Promises.
+ * This file is part of the Active Collab Insight.
  *
  * (c) A51 doo <info@activecollab.com>
  *
@@ -9,14 +9,14 @@
  * with this source code in the file LICENSE.
  */
 
-namespace ActiveCollab\Insight;
+namespace ActiveCollab\Insight\Account;
 
 use Psr\Log\LoggerInterface;
 
 /**
  * @package ActiveCollab\Insight
  */
-interface SystemLogsInterface extends LoggerInterface
+interface LogsInterface extends LoggerInterface
 {
     /**
      * Paginate log entries.
@@ -46,7 +46,7 @@ interface SystemLogsInterface extends LoggerInterface
      *
      * @param callable $callback
      * @param string[] $include
-     * @param string[] $ignore
+     * @param string[] $exclude
      */
-    public function forEachLog(callable $callback, array $include = null, array $ignore = null);
+    public function forEachLog(callable $callback, array $include = null, array $exclude = null);
 }

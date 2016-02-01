@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Active Collab Promises.
+ * This file is part of the Active Collab Insight.
  *
  * (c) A51 doo <info@activecollab.com>
  *
@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Events;
 
+use ActiveCollab\Insight\StorageInterface;
 use ActiveCollab\Insight\Utilities\Timestamp;
 use Redis;
 use RedisCluster;
@@ -159,20 +160,16 @@ trait Implementation
     // ---------------------------------------------------
 
     /**
-     * @return Redis|RedisCluster
-     */
-    abstract protected function &getInsightRedisClient();
-
-    /**
-     * @param callable $callback
-     */
-    abstract protected function transaction(callable $callback);
-
-    /**
-     * Return Redis key for the given account and subkey.
+     * Return account ID.
      *
-     * @param  string|array|null $sub
-     * @return string
+     * @return int
      */
-    abstract public function getRedisKey($sub = null);
+    abstract public function getId();
+
+    /**
+     * Return metrics storage instance.
+     *
+     * @return StorageInterface
+     */
+    abstract public function &getMetricsStorage(): StorageInterface;
 }

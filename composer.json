@@ -6,9 +6,11 @@
     "keywords": [
         "user",
         "engagement",
+        "saas",
+        "metrics",
         "activecollab"
     ],
-    "homepage": "https://www.activecollab.com/labs/index.html",
+    "homepage": "https://labs.activecollab.com/index.html",
     "authors": [
         {
             "name": "Ilija Studen",
@@ -16,7 +18,7 @@
         }
     ],
     "require": {
-        "php": ">=5.6.0",
+        "php": ">=7.0.0",
         "psr/log": "~1.0",
         "activecollab/resistance": "dev-master",
         "activecollab/databaseconnection": "dev-next"
