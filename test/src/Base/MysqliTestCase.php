@@ -18,7 +18,7 @@ use ActiveCollab\DateValue\DateTimeValue;
 /**
  * @package ActiveCollab\Insight\Test
  */
-abstract class MysqlTestCase extends TestCase
+abstract class MysqliTestCase extends TestCase
 {
     /**
      * @var \mysqli

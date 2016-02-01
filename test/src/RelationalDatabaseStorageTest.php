@@ -13,12 +13,12 @@ namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\Account\Event;
 use ActiveCollab\Insight\Storage\RelationalDatabaseStorage;
-use ActiveCollab\Insight\Test\Base\MysqlTestCase;
+use ActiveCollab\Insight\Test\Base\MysqliTestCase;
 
 /**
  * @package ActiveCollab\Insight\Test
  */
-class RelationalDatabaseStorageTest extends MysqlTestCase
+class RelationalDatabaseStorageTest extends MysqliTestCase
 {
     /**
      * Test if default table prefix is metrics.
