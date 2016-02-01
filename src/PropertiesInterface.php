@@ -16,7 +16,7 @@ use DateTime;
 /**
  * @package ActiveCollab\Insight
  */
-interface Properties
+interface PropertiesInterface
 {
     /**
      * Return account ID.

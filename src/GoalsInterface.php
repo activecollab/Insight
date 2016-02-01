@@ -16,7 +16,7 @@ use DateTime;
 /**
  * @package ActiveCollab\Insight
  */
-interface Goals
+interface GoalsInterface
 {
     /**
      * Return all goals that are reached.

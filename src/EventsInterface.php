@@ -14,7 +14,7 @@ namespace ActiveCollab\Insight;
 /**
  * @package ActiveCollab\Insight
  */
-interface Events
+interface EventsInterface
 {
     /**
      * Log an event.

@@ -11,15 +11,15 @@
 
 namespace ActiveCollab\Insight\Test;
 
-use ActiveCollab\Insight\DataSetTimeline;
+use ActiveCollab\Insight\DataSetTimelineInterface;
 use ActiveCollab\Insight\DataSetTimeline\Implementation as DataSetTimelineImplementation;
-use ActiveCollab\Insight\Events;
+use ActiveCollab\Insight\EventsInterface;
 use ActiveCollab\Insight\Events\Implementation as EventsImplementation;
-use ActiveCollab\Insight\Goals;
+use ActiveCollab\Insight\GoalsInterface;
 use ActiveCollab\Insight\Goals\Implementation as GoalsImplementation;
-use ActiveCollab\Insight\Properties;
+use ActiveCollab\Insight\PropertiesInterface;
 use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
-use ActiveCollab\Insight\SystemLogs;
+use ActiveCollab\Insight\SystemLogsInterface;
 use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
 use ActiveCollab\Insight\Utilities\Keyspace;
 use Redis;
@@ -28,7 +28,7 @@ use RedisCluster;
 /**
  * @package ActiveCollab\Insight\Test
  */
-class Account implements Properties, Events, SystemLogs, DataSetTimeline, Goals
+class Account implements PropertiesInterface, EventsInterface, SystemLogsInterface, DataSetTimelineInterface, GoalsInterface
 {
     use Keyspace, PropertiesImplementation, EventsImplementation, SystemLogsImplementation, DataSetTimelineImplementation, GoalsImplementation;
 

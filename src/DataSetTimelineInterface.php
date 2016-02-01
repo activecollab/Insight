@@ -16,7 +16,7 @@ use DateTime;
 /**
  * @package ActiveCollab\Insight
  */
-interface DataSetTimeline
+interface DataSetTimelineInterface
 {
     /**
      * Build timeline for the given time range (dates are inclusive).

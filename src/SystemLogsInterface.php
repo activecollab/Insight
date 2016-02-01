@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @package ActiveCollab\Insight
  */
-interface SystemLogs extends LoggerInterface
+interface SystemLogsInterface extends LoggerInterface
 {
     /**
      * Paginate log entries.
