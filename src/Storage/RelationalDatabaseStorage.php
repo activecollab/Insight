@@ -15,6 +15,7 @@ namespace ActiveCollab\Insight\Storage;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\Insight\Account\Event;
+use ActiveCollab\Insight\AccountInterface;
 use ActiveCollab\Insight\ElementInterface;
 use ActiveCollab\Insight\StorageInterface;
 use Doctrine\Common\Inflector\Inflector;
@@ -55,6 +56,29 @@ class RelationalDatabaseStorage implements StorageInterface
     }
 
     /**
+     * Return total number of elements of a given type that we have stored.
+     *
+     * @param  string $element_type
+     * @return int
+     */
+    public function count(string $element_type): int
+    {
+        return $this->connection->count($this->getStoreName($element_type));
+    }
+
+    /**
+     * Return total number of elements of a given type that we have stored for the given account.
+     *
+     * @param  string           $element_type
+     * @param  AccountInterface $account
+     * @return int
+     */
+    public function countByAccount(string $element_type, AccountInterface $account): int
+    {
+        return $this->connection->count($this->getStoreName($element_type), ['`account_id`` = ?', $account->getId()]);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getTablePrefix(): string
@@ -70,38 +94,38 @@ class RelationalDatabaseStorage implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function getStoreName($for_element): string
+    public function getStoreName(string $element_type): string
     {
-        if (empty($for_element)) {
+        if (empty($element_type)) {
             throw new InvalidArgumentException('Element name is required');
         }
 
-        if (substr($for_element, 0, 1) === '\\') {
-            $for_element = ltrim($for_element, '\\');
+        if (substr($element_type, 0, 1) === '\\') {
+            $element_type = ltrim($element_type, '\\');
         }
 
-        if (empty($this->store_names[$for_element])) {
-            if (class_exists($for_element)) {
-                if (!(new ReflectionClass($for_element))->implementsInterface(ElementInterface::class)) {
+        if (empty($this->store_names[$element_type])) {
+            if (class_exists($element_type)) {
+                if (!(new ReflectionClass($element_type))->implementsInterface(ElementInterface::class)) {
                     throw new InvalidArgumentException('Element class expected (class that implements ' . ElementInterface::class . ')');
                 }
             } else {
-                throw new InvalidArgumentException("Class name '$for_element' not found");
+                throw new InvalidArgumentException("Class name '$element_type' not found");
             }
 
-            $namespace_bits = explode('\\', substr($for_element, strlen('ActiveCollab\\Insight\\')));
+            $namespace_bits = explode('\\', substr($element_type, strlen('ActiveCollab\\Insight\\')));
             $last_namespace_bit = array_pop($namespace_bits);
 
-            $this->store_names[$for_element] = empty($this->getTablePrefix()) ? '' : $this->getTablePrefix() . '_';
+            $this->store_names[$element_type] = empty($this->getTablePrefix()) ? '' : $this->getTablePrefix() . '_';
 
             foreach ($namespace_bits as $namespace_bit) {
-                $this->store_names[$for_element] .= Inflector::tableize($namespace_bit) . '_';
+                $this->store_names[$element_type] .= Inflector::tableize($namespace_bit) . '_';
             }
 
-            $this->store_names[$for_element] .= Inflector::pluralize(Inflector::tableize($last_namespace_bit));
+            $this->store_names[$element_type] .= Inflector::pluralize(Inflector::tableize($last_namespace_bit));
         }
 
-        return $this->store_names[$for_element];
+        return $this->store_names[$element_type];
     }
 
     /**

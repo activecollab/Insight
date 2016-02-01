@@ -25,12 +25,29 @@ interface StorageInterface
     public function store(ElementInterface $element);
 
     /**
+     * Return total number of elements of a given type that we have stored.
+     *
+     * @param  string $element_type
+     * @return int
+     */
+    public function count(string $element_type): int;
+
+    /**
+     * Return total number of elements of a given type that we have stored for the given account.
+     *
+     * @param  string           $element_type
+     * @param  AccountInterface $account
+     * @return int
+     */
+    public function countByAccount(string $element_type, AccountInterface $account): int;
+
+    /**
      * Return store name for the given element type.
      *
-     * @param  string $for_element
+     * @param  string $element_type
      * @return string
      */
-    public function getStoreName($for_element): string;
+    public function getStoreName(string $element_type): string;
 
     /**
      * Return an array of store names that we use to store metrics.
