@@ -12,15 +12,15 @@
 namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\Utilities\Timestamp;
-  use Redis;
-  use RedisCluster;
+use Redis;
+use RedisCluster;
 
-  /**
-   * @package ActiveCollab\Insight\Test
-   */
-  abstract class TestCase extends \PHPUnit_Framework_TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Insight\Test
+ */
+abstract class TestCase extends \PHPUnit_Framework_TestCase
+{
+    /**
      * @var int
      */
     protected $current_timestamp;
@@ -73,4 +73,4 @@ use ActiveCollab\Insight\Utilities\Timestamp;
             $this->redis_client->flushdb();
         }
     }
-  }
+}

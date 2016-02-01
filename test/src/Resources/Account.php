@@ -12,25 +12,25 @@
 namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\DataSetTimeline;
-  use ActiveCollab\Insight\DataSetTimeline\Implementation as DataSetTimelineImplementation;
-  use ActiveCollab\Insight\Events;
-  use ActiveCollab\Insight\Events\Implementation as EventsImplementation;
-  use ActiveCollab\Insight\Goals;
-  use ActiveCollab\Insight\Goals\Implementation as GoalsImplementation;
-  use ActiveCollab\Insight\Properties;
-  use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
-  use ActiveCollab\Insight\SystemLogs;
-  use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
-  use ActiveCollab\Insight\Utilities\Keyspace;
-  use Redis;
-  use RedisCluster;
+use ActiveCollab\Insight\DataSetTimeline\Implementation as DataSetTimelineImplementation;
+use ActiveCollab\Insight\Events;
+use ActiveCollab\Insight\Events\Implementation as EventsImplementation;
+use ActiveCollab\Insight\Goals;
+use ActiveCollab\Insight\Goals\Implementation as GoalsImplementation;
+use ActiveCollab\Insight\Properties;
+use ActiveCollab\Insight\Properties\Implementation as PropertiesImplementation;
+use ActiveCollab\Insight\SystemLogs;
+use ActiveCollab\Insight\SystemLogs\Implementation as SystemLogsImplementation;
+use ActiveCollab\Insight\Utilities\Keyspace;
+use Redis;
+use RedisCluster;
 
-  /**
-   * @package ActiveCollab\Insight\Test
-   */
-  class Account implements Properties, Events, SystemLogs, DataSetTimeline, Goals
-  {
-      use Keyspace, PropertiesImplementation, EventsImplementation, SystemLogsImplementation, DataSetTimelineImplementation, GoalsImplementation;
+/**
+ * @package ActiveCollab\Insight\Test
+ */
+class Account implements Properties, Events, SystemLogs, DataSetTimeline, Goals
+{
+    use Keyspace, PropertiesImplementation, EventsImplementation, SystemLogsImplementation, DataSetTimelineImplementation, GoalsImplementation;
 
     /**
      * @var Redis|RedisCluster
@@ -55,10 +55,10 @@ use ActiveCollab\Insight\DataSetTimeline;
         }
 
         $this->onBeforeSetProperty('clean_version_number', function (&$value) {
-        if (strpos($value, '-')) {
-            $value = explode('-', $value)[0];
-        }
-      });
+            if (strpos($value, '-')) {
+                $value = explode('-', $value)[0];
+            }
+        });
     }
 
     /**
@@ -84,4 +84,4 @@ use ActiveCollab\Insight\DataSetTimeline;
     {
         call_user_func_array($callback, [&$this->redis_client]);
     }
-  }
+}

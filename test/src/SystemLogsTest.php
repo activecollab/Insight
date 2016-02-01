@@ -13,12 +13,12 @@ namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\Utilities\Timestamp;
 
-  /**
-   * @package ActiveCollab\Resistance\Test
-   */
-  class SystemLogsTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Resistance\Test
+ */
+class SystemLogsTest extends TestCase
+{
+    /**
      * @var Account
      */
     private $account;
@@ -69,11 +69,11 @@ use ActiveCollab\Insight\Utilities\Timestamp;
     public function testLogMessagePlaceholders()
     {
         $this->account->error('Failed to send email from {from} to {to} with subject "{subject}"', [
-        'from' => 'ilija.studen@activecollab.com',
-        'to' => 'goran.radulovic@activecollab.com',
-        'subject' => 'Re: Feather updates',
-        'not_in_message' => true,
-      ]);
+            'from' => 'ilija.studen@activecollab.com',
+            'to' => 'goran.radulovic@activecollab.com',
+            'subject' => 'Re: Feather updates',
+            'not_in_message' => true,
+        ]);
 
         $log_entries = $this->account->getLog();
 
@@ -81,8 +81,8 @@ use ActiveCollab\Insight\Utilities\Timestamp;
 
         $this->assertEquals('Failed to send email from <span data-prop="from">ilija.studen@activecollab.com</span> to <span data-prop="to">goran.radulovic@activecollab.com</span> with subject "<span data-prop="subject">Re: Feather updates</span>"', $this->account->getLog()[0]['message']);
         $this->assertEquals([
-        'not_in_message' => true,
-      ], $this->account->getLog()[0]['context']);
+            'not_in_message' => true,
+        ], $this->account->getLog()[0]['context']);
     }
 
     /**
@@ -103,12 +103,12 @@ use ActiveCollab\Insight\Utilities\Timestamp;
         $last_5 = [];
 
         $this->account->forEachLog(function ($record, $iteration) use (&$current_timestamp, &$last_5) {
-        $this->assertEquals($current_timestamp--, $record['timestamp']);
+            $this->assertEquals($current_timestamp--, $record['timestamp']);
 
-        $last_5[] = $record['message'];
+            $last_5[] = $record['message'];
 
-        return $iteration === 5 ? false : null;
-      });
+            return $iteration === 5 ? false : null;
+        });
 
         $this->assertCount(5, $last_5);
         $this->assertEquals('Event 11', $last_5[0]);
@@ -132,8 +132,8 @@ use ActiveCollab\Insight\Utilities\Timestamp;
         $filtered_dinos = [];
 
         $this->account->forEachLog(function ($record) use (&$filtered_dinos) {
-        $filtered_dinos[] = $record['message'];
-      }, ['Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs']);
+            $filtered_dinos[] = $record['message'];
+        }, ['Tyrannosaurs', 'Sauropods', 'Raptors', 'Ankylosaurs']);
 
         $this->assertEquals(['Ankylosaurs', 'Raptors', 'Sauropods', 'Tyrannosaurs'], $filtered_dinos);
     }
@@ -155,8 +155,8 @@ use ActiveCollab\Insight\Utilities\Timestamp;
         $filtered_dinos = [];
 
         $this->account->forEachLog(function ($record) use (&$filtered_dinos) {
-        $filtered_dinos[] = $record['message'];
-      }, null, ['Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids']);
+            $filtered_dinos[] = $record['message'];
+        }, null, ['Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids']);
 
         $this->assertEquals(['Sauropods', 'Tyrannosaurs'], $filtered_dinos);
     }
@@ -178,8 +178,8 @@ use ActiveCollab\Insight\Utilities\Timestamp;
         $filtered_dinos = [];
 
         $this->account->forEachLog(function ($record) use (&$filtered_dinos) {
-        $filtered_dinos[] = $record['message'];
-      }, ['Sauropods', 'Raptors', 'Ankylosaurs'], ['Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids']);
+            $filtered_dinos[] = $record['message'];
+        }, ['Sauropods', 'Raptors', 'Ankylosaurs'], ['Raptors', 'Ankylosaurs', 'Hadrosaurs', 'Ornithomimids']);
 
         $this->assertEquals(['Sauropods'], $filtered_dinos);
     }
@@ -247,7 +247,7 @@ use ActiveCollab\Insight\Utilities\Timestamp;
     {
         $old_timestamp = Timestamp::lock(strtotime('-14 days')); // old
 
-      $this->account->info('Log entry #1');
+        $this->account->info('Log entry #1');
 
         $this->assertEquals(1, $this->redis_client->zcount($this->account->getLogRecordsKey(), $old_timestamp, $old_timestamp));
 
@@ -266,7 +266,7 @@ use ActiveCollab\Insight\Utilities\Timestamp;
     {
         Timestamp::lock(strtotime('-14 days')); // old
 
-      $this->account->info('Log entry #1');
+        $this->account->info('Log entry #1');
 
         Timestamp::lock();
 
@@ -274,4 +274,4 @@ use ActiveCollab\Insight\Utilities\Timestamp;
 
         $this->assertCount(1, $this->account->getLog());
     }
-  }
+}

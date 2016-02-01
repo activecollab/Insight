@@ -13,12 +13,12 @@ namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\Utilities\Timestamp;
 
-  /**
-   * @package ActiveCollab\Insight\Test
-   */
-  class TimestampLockingTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Insight\Test
+ */
+class TimestampLockingTest extends TestCase
+{
+    /**
      * Test if current timestamp is locked by default.
      */
     public function testTimestampLockedInTests()
@@ -50,4 +50,4 @@ use ActiveCollab\Insight\Utilities\Timestamp;
 
         $this->assertEquals(time(), Timestamp::now()->getTimestamp());
     }
-  }
+}

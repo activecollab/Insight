@@ -12,14 +12,14 @@
 namespace ActiveCollab\Insight\Test;
 
 use DateTime;
-  use DateTimeZone;
+use DateTimeZone;
 
-  /**
-   * @package ActiveCollab\Resistance\Test
-   */
-  class GoalsTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Resistance\Test
+ */
+class GoalsTest extends TestCase
+{
+    /**
      * @var Account
      */
     private $account;
@@ -109,8 +109,8 @@ use DateTime;
         $this->account->setGoalAsReached('D', new DateTime('2015-05-05', $gmt));
         $this->account->setGoalAsReached('A', new DateTime('2015-05-09', $gmt));
 
-      /** @var DateTime[] $history */
-      $history = $this->account->getGoalsHistory();
+        /** @var DateTime[] $history */
+        $history = $this->account->getGoalsHistory();
 
         $this->assertEquals(['C', 'B', 'D', 'A'], array_keys($history));
 
@@ -119,4 +119,4 @@ use DateTime;
         $this->assertEquals('2015-05-05', $history['D']->format('Y-m-d'));
         $this->assertEquals('2015-05-09', $history['A']->format('Y-m-d'));
     }
-  }
+}

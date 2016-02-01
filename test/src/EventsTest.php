@@ -13,12 +13,12 @@ namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\Utilities\Timestamp;
 
-  /**
-   * @package ActiveCollab\Resistance\Test
-   */
-  class EventsTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Resistance\Test
+ */
+class EventsTest extends TestCase
+{
+    /**
      * @var Account
      */
     private $account;
@@ -73,12 +73,12 @@ use ActiveCollab\Insight\Utilities\Timestamp;
         $last_5 = [];
 
         $this->account->forEachEvent(function ($event, $iteration) use (&$current_timestamp, &$last_5) {
-        $this->assertEquals($current_timestamp--, $event['timestamp']);
+            $this->assertEquals($current_timestamp--, $event['timestamp']);
 
-        $last_5[] = $event['event'];
+            $last_5[] = $event['event'];
 
-        return $iteration === 5 ? false : null;
-      });
+            return $iteration === 5 ? false : null;
+        });
 
         $this->assertCount(5, $last_5);
         $this->assertEquals('Event 11', $last_5[0]);
@@ -124,4 +124,4 @@ use ActiveCollab\Insight\Utilities\Timestamp;
 
         $this->assertEquals('Event 1', $page_3[0]['event']);
     }
-  }
+}

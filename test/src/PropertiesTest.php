@@ -13,12 +13,12 @@ namespace ActiveCollab\Insight\Test;
 
 use DateTime;
 
-  /**
-   * @package ActiveCollab\Resistance\Test
-   */
-  class PropertiesTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Resistance\Test
+ */
+class PropertiesTest extends TestCase
+{
+    /**
      * @var Account
      */
     private $account;
@@ -110,10 +110,10 @@ use DateTime;
 
         $this->assertEquals(['2015-05-01', '2015-05-07', '2015-05-11'], $this->account->getPropertyTimestamps('plan'));
         $this->assertEquals([
-        '2015-05-01' => 'M',
-        '2015-05-07' => 'L',
-        '2015-05-11' => 'XL',
-      ], $this->account->getPropertyHistory('plan'));
+            '2015-05-01' => 'M',
+            '2015-05-07' => 'L',
+            '2015-05-11' => 'XL',
+        ], $this->account->getPropertyHistory('plan'));
 
         $this->assertEquals('2015-05-01', $this->account->getOldestPropertyValueTimestamp('plan'));
         $this->assertEquals('2015-05-11', $this->account->getLatestPropertyValueTimestamp('plan'));
@@ -134,22 +134,22 @@ use DateTime;
         $this->assertEquals('5.6.6', $this->account->getProperty('clean_version_number'));
     }
 
-      public function testValueSerialization()
-      {
-          $this->account->setProperty('is_cool', true);
-          $this->account->setProperty('is_not_cool', false);
-          $this->account->setProperty('a_number', 12);
-          $this->account->setProperty('a_string', 'abc123');
-          $this->account->setProperty('a_numerical_string', '123');
-          $this->account->setProperty('a_negative_numerical_string', '-123');
-          $this->account->setProperty('an_array', [1, 2, 3]);
+    public function testValueSerialization()
+    {
+        $this->account->setProperty('is_cool', true);
+        $this->account->setProperty('is_not_cool', false);
+        $this->account->setProperty('a_number', 12);
+        $this->account->setProperty('a_string', 'abc123');
+        $this->account->setProperty('a_numerical_string', '123');
+        $this->account->setProperty('a_negative_numerical_string', '-123');
+        $this->account->setProperty('an_array', [1, 2, 3]);
 
-          $this->assertTrue($this->account->getProperty('is_cool'));
-          $this->assertFalse($this->account->getProperty('is_not_cool'));
-          $this->assertSame(12, $this->account->getProperty('a_number'));
-          $this->assertSame('abc123', $this->account->getProperty('a_string'));
-          $this->assertSame(123, $this->account->getProperty('a_numerical_string'));
-          $this->assertSame(-123, $this->account->getProperty('a_negative_numerical_string'));
-          $this->assertSame([1, 2, 3], $this->account->getProperty('an_array'));
-      }
-  }
+        $this->assertTrue($this->account->getProperty('is_cool'));
+        $this->assertFalse($this->account->getProperty('is_not_cool'));
+        $this->assertSame(12, $this->account->getProperty('a_number'));
+        $this->assertSame('abc123', $this->account->getProperty('a_string'));
+        $this->assertSame(123, $this->account->getProperty('a_numerical_string'));
+        $this->assertSame(-123, $this->account->getProperty('a_negative_numerical_string'));
+        $this->assertSame([1, 2, 3], $this->account->getProperty('an_array'));
+    }
+}

@@ -12,14 +12,14 @@
 namespace ActiveCollab\Insight\Test;
 
 use DateTime;
-  use DateTimeZone;
+use DateTimeZone;
 
-  /**
-   * @package ActiveCollab\Resistance\Test
-   */
-  class DatasetTimelineTest extends TestCase
-  {
-      /**
+/**
+ * @package ActiveCollab\Resistance\Test
+ */
+class DatasetTimelineTest extends TestCase
+{
+    /**
      * @var Account
      */
     private $account;
@@ -96,4 +96,4 @@ use DateTime;
     {
         $this->account->getTimeline(new DateTime('2015-05-09'), new DateTime('2013-10-02'));
     }
-  }
+}
