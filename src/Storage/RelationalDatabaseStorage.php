@@ -49,26 +49,9 @@ class RelationalDatabaseStorage implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function prepareStores()
+    public function store(ElementInterface $element)
     {
-        foreach ($this->getStoreNames() as $table_name) {
-            if (!$this->connection->tableExists($table_name)) {
-                switch ($table_name) {
-                    case $this->getStoreName(Event::class):
-                        $this->connection->execute("CREATE TABLE `$table_name` (
-                            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                            `account_id` int(10) unsigned NOT NULL DEFAULT '0',
-                            `event` varchar(191) NOT NULL DEFAULT '',
-                            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-                            PRIMARY KEY (`id`),
-                            KEY (`account_id`, `event`),
-                            KEY (`event`),
-                            KEY (`created_at`)
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
-                        break;
-                }
-            }
-        }
+        return $this;
     }
 
     /**
@@ -85,10 +68,7 @@ class RelationalDatabaseStorage implements StorageInterface
     private $store_names = [];
 
     /**
-     * Return table name.
-     *
-     * @param  string $for_element
-     * @return string
+     * {@inheritdoc}
      */
     public function getStoreName($for_element): string
     {
@@ -133,7 +113,34 @@ class RelationalDatabaseStorage implements StorageInterface
     }
 
     /**
-     * Clear all storage data.
+     * {@inheritdoc}
+     */
+    public function prepareStores()
+    {
+        foreach ($this->getStoreNames() as $table_name) {
+            if (!$this->connection->tableExists($table_name)) {
+                switch ($table_name) {
+                    case $this->getStoreName(Event::class):
+                        $this->connection->execute("CREATE TABLE `$table_name` (
+                            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                            `account_id` int(10) unsigned NOT NULL DEFAULT '0',
+                            `event` varchar(191) NOT NULL DEFAULT '',
+                            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            PRIMARY KEY (`id`),
+                            KEY (`account_id`, `event`),
+                            KEY (`event`),
+                            KEY (`created_at`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+                        break;
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function clear()
     {

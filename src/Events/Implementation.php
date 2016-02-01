@@ -11,10 +11,10 @@
 
 namespace ActiveCollab\Insight\Events;
 
+use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\Insight\Account\Event;
+use ActiveCollab\Insight\AccountInterface;
 use ActiveCollab\Insight\StorageInterface;
-use ActiveCollab\Insight\Utilities\Timestamp;
-use Redis;
-use RedisCluster;
 
 /**
  * @package ActiveCollab\Insight\Events
@@ -65,43 +65,18 @@ trait Implementation
      */
     public function forEachEvent(callable $callback)
     {
-        $iteration = 0;
-        foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, true) as $hash => $timestamp) {
-            if ($record = $this->getEventByHash($hash, $timestamp)) {
-                $callback_result = call_user_func($callback, $record, ++$iteration);
-
-                if ($callback_result === false) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-    }
-
-    /**
-     * Load event details by hash.
-     *
-     * @param  string     $hash
-     * @param  int        $timestamp
-     * @return array|null
-     */
-    private function getEventByHash($hash, $timestamp)
-    {
-        $record_key = $this->getEventKey($hash);
-
-        if ($this->getInsightRedisClient()->exists($record_key)) {
-            $record = $this->getInsightRedisClient()->hmget($record_key, ['event', 'context']);
-
-            return [
-                'timestamp' => $timestamp,
-                'hash' => $hash,
-                'event' => $record['event'],
-                'context' => unserialize($record['context']),
-            ];
-        } else {
-            return null;
-        }
+//        $iteration = 0;
+//        foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, true) as $hash => $timestamp) {
+//            if ($record = $this->getEventByHash($hash, $timestamp)) {
+//                $callback_result = call_user_func($callback, $record, ++$iteration);
+//
+//                if ($callback_result === false) {
+//                    break;
+//                }
+//            } else {
+//                break;
+//            }
+//        }
     }
 
     /**
@@ -112,47 +87,16 @@ trait Implementation
      */
     public function logEvent($event, array $context = [])
     {
-        do {
-            $event_hash = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyz'), rand(0, 23), 12);
-            $event_key = $this->getEventKey($event_hash);
-        } while ($this->getInsightRedisClient()->exists($event_key));
-
-        if (isset($context['timestamp']) && $context['timestamp']) {
-            $timestamp = $context['timestamp'];
-            unset($context['timestamp']);
+        if (empty($context['timestamp'])) {
+            $timestamp = DateTimeValue::now();
+        } elseif (is_int($context['timestamp'])) {
+            $timestamp = DateTimeValue::createFromTimestamp($context['timestamp']);
         } else {
-            $timestamp = Timestamp::getCurrentTimestamp();
+            $timestamp = new DateTimeValue($context['timestamp']);
         }
 
-        $this->transaction(function ($t) use ($event, $context, $timestamp, $event_hash, $event_key) {
-
-            /* @var $t Redis|RedisCluster */
-            $t->hmset($event_key, [
-                'event' => $event,
-                'context' => serialize($context),
-            ]);
-
-            $t->zadd($this->getEventsKey(), $timestamp, $event_hash);
-        });
-    }
-
-    /**
-     * @return string
-     */
-    public function getEventsKey()
-    {
-        return $this->getRedisKey('events:hashes');
-    }
-
-    /**
-     * Return key where individual event is stored.
-     *
-     * @param  string $hash
-     * @return string
-     */
-    public function getEventKey($hash)
-    {
-        return $this->getRedisKey("events:$hash");
+        /** @var $this AccountInterface */
+        $this->getMetricsStorage()->store(new Event($this, $event, $timestamp, $context));
     }
 
     // ---------------------------------------------------

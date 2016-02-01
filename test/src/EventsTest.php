@@ -11,14 +11,14 @@
 
 namespace ActiveCollab\Insight\Test;
 
-use ActiveCollab\Insight\Test\Base\TestCase;
+use ActiveCollab\Insight\Test\Base\MysqliStorageTestCase;
 use ActiveCollab\Insight\Test\Fixtures\Account;
 use ActiveCollab\Insight\Utilities\Timestamp;
 
 /**
  * @package ActiveCollab\Resistance\Test
  */
-class EventsTest extends TestCase
+class EventsTest extends MysqliStorageTestCase
 {
     /**
      * @var Account

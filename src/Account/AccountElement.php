@@ -12,21 +12,33 @@
 namespace ActiveCollab\Insight\Account;
 
 use ActiveCollab\Insight\AccountInterface;
-use ActiveCollab\Insight\ElementInterface;
 
 /**
  * @package ActiveCollab\Insight\Account
  */
-interface AccountElementInterface extends ElementInterface
+class AccountElement implements AccountElementInterface
 {
+    /**
+     * @var AccountInterface
+     */
+    private $account;
+
     /**
      * @return AccountInterface
      */
-    public function getAccount();
+    public function getAccount()
+    {
+        return $this->account;
+    }
 
     /**
      * @param  AccountInterface $account
      * @return $this
      */
-    public function &setAccount(AccountInterface $account);
+    public function &setAccount(AccountInterface $account)
+    {
+        $this->account = $account;
+
+        return $this;
+    }
 }

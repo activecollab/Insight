@@ -19,9 +19,10 @@ namespace ActiveCollab\Insight;
 interface StorageInterface
 {
     /**
-     * Prepare data stores.
+     * @param  ElementInterface $element
+     * @return $this
      */
-    public function prepareStores();
+    public function store(ElementInterface $element);
 
     /**
      * Return store name for the given element type.
@@ -39,7 +40,16 @@ interface StorageInterface
     public function getStoreNames(): array;
 
     /**
+     * Prepare data stores.
+     *
+     * @return $this
+     */
+    public function prepareStores();
+
+    /**
      * Clear all storage data.
+     *
+     * @return $this
      */
     public function clear();
 }
