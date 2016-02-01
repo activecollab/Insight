@@ -1,15 +1,25 @@
 <?php
-  namespace ActiveCollab\Insight;
 
-  use Psr\Log\LoggerInterface;
+/*
+ * This file is part of the Active Collab Promises.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
-  /**
-   * @package ActiveCollab\Insight
-   */
-  interface SystemLogs extends LoggerInterface
-  {
+namespace ActiveCollab\Insight;
+
+use Psr\Log\LoggerInterface;
+
+/**
+ * @package ActiveCollab\Insight
+ */
+interface SystemLogs extends LoggerInterface
+{
     /**
-     * Paginate log entries
+     * Paginate log entries.
      *
      * @param  int   $page
      * @param  int   $per_page
@@ -18,14 +28,14 @@
     public function getLog($page = 1, $per_page = 100);
 
     /**
-     * Return number of log records that are in the log
+     * Return number of log records that are in the log.
      *
-     * @return integer
+     * @return int
      */
     public function countLogs();
 
     /**
-     * Iterate over log entries, for newest to oldest
+     * Iterate over log entries, for newest to oldest.
      *
      * Two arguments are sent to the callback:
      *
@@ -39,4 +49,4 @@
      * @param string[] $ignore
      */
     public function forEachLog(callable $callback, array $include = null, array $ignore = null);
-  }
+}

@@ -1,10 +1,19 @@
 <?php
 
-  namespace ActiveCollab\Insight\Utilities;
+/*
+ * This file is part of the Active Collab Promises.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
-  /**
-   * @package ActiveCollab\Insight\Utilities
-   */
-  final class GlobalSystemLogs
-  {
-  }
+namespace ActiveCollab\Insight\Utilities;
+
+/**
+ * @package ActiveCollab\Insight\Utilities
+ */
+final class GlobalSystemLogs
+{
+}

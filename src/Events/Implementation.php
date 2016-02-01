@@ -1,16 +1,27 @@
 <?php
-  namespace ActiveCollab\Insight\Events;
 
-  use ActiveCollab\Insight\Utilities\Timestamp;
-  use Redis, RedisCluster;
+/*
+ * This file is part of the Active Collab Promises.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
-  /**
-   * @package ActiveCollab\Insight\Events
-   */
-  trait Implementation
-  {
+namespace ActiveCollab\Insight\Events;
+
+use ActiveCollab\Insight\Utilities\Timestamp;
+use Redis;
+use RedisCluster;
+
+/**
+ * @package ActiveCollab\Insight\Events
+ */
+trait Implementation
+{
     /**
-     * Paginate events
+     * Paginate events.
      *
      * @param  int   $page
      * @param  int   $per_page
@@ -18,31 +29,31 @@
      */
     public function getEvents($page = 1, $per_page = 100)
     {
-      $result = [];
+        $result = [];
 
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), ($page - 1) * $per_page, $page * $per_page - 1, true) as $hash => $timestamp) {
-        if ($record = $this->getEventByHash($hash, $timestamp)) {
-          $result[] = $record;
-        } else {
-          break;
+        foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), ($page - 1) * $per_page, $page * $per_page - 1, true) as $hash => $timestamp) {
+            if ($record = $this->getEventByHash($hash, $timestamp)) {
+                $result[] = $record;
+            } else {
+                break;
+            }
         }
-      }
 
-      return $result;
+        return $result;
     }
 
     /**
-     * Return number of events that are logged
+     * Return number of events that are logged.
      *
-     * @return integer
+     * @return int
      */
     public function countEvents()
     {
-      return $this->getInsightRedisClient()->zcard($this->getEventsKey());
+        return $this->getInsightRedisClient()->zcard($this->getEventsKey());
     }
 
     /**
-     * Iterate over events, for newest to oldest
+     * Iterate over events, for newest to oldest.
      *
      * Two arguments are sent to the callback:
      *
@@ -53,75 +64,75 @@
      */
     public function forEachEvent(callable $callback)
     {
-      $iteration = 0;
-      foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, true) as $hash => $timestamp) {
-        if ($record = $this->getEventByHash($hash, $timestamp)) {
-          $callback_result = call_user_func($callback, $record, ++$iteration);
+        $iteration = 0;
+        foreach ($this->getInsightRedisClient()->zrevrange($this->getEventsKey(), 0, $this->countEvents() - 1, true) as $hash => $timestamp) {
+            if ($record = $this->getEventByHash($hash, $timestamp)) {
+                $callback_result = call_user_func($callback, $record, ++$iteration);
 
-          if ($callback_result === false) {
-            break;
-          }
-        } else {
-          break;
+                if ($callback_result === false) {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
-      }
     }
 
     /**
-     * Load event details by hash
+     * Load event details by hash.
      *
      * @param  string     $hash
-     * @param  integer    $timestamp
+     * @param  int        $timestamp
      * @return array|null
      */
     private function getEventByHash($hash, $timestamp)
     {
-      $record_key = $this->getEventKey($hash);
+        $record_key = $this->getEventKey($hash);
 
-      if ($this->getInsightRedisClient()->exists($record_key)) {
-        $record = $this->getInsightRedisClient()->hmget($record_key, [ 'event', 'context' ]);
+        if ($this->getInsightRedisClient()->exists($record_key)) {
+            $record = $this->getInsightRedisClient()->hmget($record_key, ['event', 'context']);
 
-        return [
-          'timestamp' => $timestamp,
-          'hash' => $hash,
-          'event' => $record['event'],
-          'context' => unserialize($record['context']),
-        ];
-      } else {
-        return null;
-      }
+            return [
+                'timestamp' => $timestamp,
+                'hash' => $hash,
+                'event' => $record['event'],
+                'context' => unserialize($record['context']),
+            ];
+        } else {
+            return null;
+        }
     }
 
     /**
-     * Log an event
+     * Log an event.
      *
      * @param string $event
      * @param array  $context
      */
     public function logEvent($event, array $context = [])
     {
-      do {
-        $event_hash = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyz'), rand(0, 23), 12);
-        $event_key = $this->getEventKey($event_hash);
-      } while ($this->getInsightRedisClient()->exists($event_key));
+        do {
+            $event_hash = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyz'), rand(0, 23), 12);
+            $event_key = $this->getEventKey($event_hash);
+        } while ($this->getInsightRedisClient()->exists($event_key));
 
-      if (isset($context['timestamp']) && $context['timestamp']) {
-        $timestamp = $context['timestamp'];
-        unset($context['timestamp']);
-      } else {
-        $timestamp = Timestamp::getCurrentTimestamp();
-      }
+        if (isset($context['timestamp']) && $context['timestamp']) {
+            $timestamp = $context['timestamp'];
+            unset($context['timestamp']);
+        } else {
+            $timestamp = Timestamp::getCurrentTimestamp();
+        }
 
-      $this->transaction(function($t) use ($event, $context, $timestamp, $event_hash, $event_key) {
+        $this->transaction(function ($t) use ($event, $context, $timestamp, $event_hash, $event_key) {
 
-        /** @var $t Redis|RedisCluster */
-        $t->hmset($event_key, [
-          'event' => $event,
-          'context' => serialize($context),
-        ]);
+            /* @var $t Redis|RedisCluster */
+            $t->hmset($event_key, [
+                'event' => $event,
+                'context' => serialize($context),
+            ]);
 
-        $t->zadd($this->getEventsKey(), $timestamp, $event_hash);
-      });
+            $t->zadd($this->getEventsKey(), $timestamp, $event_hash);
+        });
     }
 
     /**
@@ -129,18 +140,18 @@
      */
     public function getEventsKey()
     {
-      return $this->getRedisKey('events:hashes');
+        return $this->getRedisKey('events:hashes');
     }
 
     /**
-     * Return key where individual event is stored
+     * Return key where individual event is stored.
      *
      * @param  string $hash
      * @return string
      */
     public function getEventKey($hash)
     {
-      return $this->getRedisKey("events:$hash");
+        return $this->getRedisKey("events:$hash");
     }
 
     // ---------------------------------------------------
@@ -158,10 +169,10 @@
     abstract protected function transaction(callable $callback);
 
     /**
-     * Return Redis key for the given account and subkey
+     * Return Redis key for the given account and subkey.
      *
      * @param  string|array|null $sub
      * @return string
      */
     abstract public function getRedisKey($sub = null);
-  }
+}

@@ -1,13 +1,23 @@
 <?php
-  namespace ActiveCollab\Insight;
 
-  /**
-   * @package ActiveCollab\Insight
-   */
-  interface Events
-  {
+/*
+ * This file is part of the Active Collab Promises.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace ActiveCollab\Insight;
+
+/**
+ * @package ActiveCollab\Insight
+ */
+interface Events
+{
     /**
-     * Log an event
+     * Log an event.
      *
      * @param string $event
      * @param array  $context
@@ -15,7 +25,7 @@
     public function logEvent($event, array $context = []);
 
     /**
-     * Paginate events
+     * Paginate events.
      *
      * @param  int   $page
      * @param  int   $per_page
@@ -24,14 +34,14 @@
     public function getEvents($page = 1, $per_page = 100);
 
     /**
-     * Return number of events that are logged
+     * Return number of events that are logged.
      *
-     * @return integer
+     * @return int
      */
     public function countEvents();
 
     /**
-     * Iterate over events, for newest to oldest
+     * Iterate over events, for newest to oldest.
      *
      * Two arguments are sent to the callback:
      *
@@ -41,4 +51,4 @@
      * @param callable $callback
      */
     public function forEachEvent(callable $callback);
-  }
+}

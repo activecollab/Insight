@@ -1,29 +1,34 @@
 {
-  "name" : "activecollab/insight",
-  "type": "library",
-  "description": "Simple user engagement tracking library",
-  "prefer-stable": true,
-  "keywords": [ "user", "engagement", "activecollab" ],
-  "homepage": "https://www.activecollab.com/labs/index.html",
-  "authors": [
-    {
-      "name": "Ilija Studen",
-      "email": "ilija.studen@activecollab.com"
+    "name": "activecollab/insight",
+    "type": "library",
+    "description": "Simple user engagement tracking library",
+    "prefer-stable": true,
+    "keywords": [
+        "user",
+        "engagement",
+        "activecollab"
+    ],
+    "homepage": "https://www.activecollab.com/labs/index.html",
+    "authors": [
+        {
+            "name": "Ilija Studen",
+            "email": "ilija.studen@activecollab.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "psr/log": "~1.0",
+        "activecollab/resistance": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.0",
+        "fabpot/php-cs-fixer": "~1.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "ActiveCollab\\Insight\\": "src",
+            "ActiveCollab\\Insight\\Test\\": "test/src"
+        }
     }
-  ],
-  "require" : {
-    "php": ">=5.5.0",
-    "psr/log": "~1.0",
-    "activecollab/resistance" : "dev-master"
-  },
-  "require-dev" : {
-    "phpunit/phpunit": "~4.1"
-  },
-  "minimum-stability": "dev",
-  "autoload": {
-    "psr-4": {
-      "ActiveCollab\\Insight\\": "src",
-      "ActiveCollab\\Insight\\Test\\": "test/src"
-    }
-  }
 }

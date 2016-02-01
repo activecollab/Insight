@@ -1,15 +1,25 @@
 <?php
-  namespace ActiveCollab\Insight;
 
-  use DateTime;
+/*
+ * This file is part of the Active Collab Promises.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
-  /**
-   * @package ActiveCollab\Insight
-   */
-  interface Properties
-  {
+namespace ActiveCollab\Insight;
+
+use DateTime;
+
+/**
+ * @package ActiveCollab\Insight
+ */
+interface Properties
+{
     /**
-     * Return account ID
+     * Return account ID.
      *
      * @return int
      */
@@ -26,12 +36,12 @@
      * @param string   $property_name
      * @param mixed    $value
      * @param DateTime $on_date
-     * @param mixed
+     * @param          mixed
      */
     public function setProperty($property_name, $value, DateTime $on_date = null);
 
     /**
-     * Return property history (key is date)
+     * Return property history (key is date).
      *
      * @param  string $property_name
      * @return array
@@ -49,4 +59,4 @@
      * @return string|null
      */
     public function getLatestPropertyValueTimestamp($property_name);
-  }
+}
