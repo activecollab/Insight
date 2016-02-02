@@ -14,9 +14,13 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\AccountInsight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\Insight\AccountInsight\Metric\MetricInterface;
+use Doctrine\Common\Inflector\Inflector;
+use LogicException;
 use Psr\Log\LoggerInterface;
 
 /**
+ * @property \ActiveCollab\Insight\AccountInsight\Metric\EventsInterface $events
  * @package ActiveCollab\Insight\AccountInsight
  */
 class AccountInsight implements AccountInsightInterface
@@ -46,5 +50,31 @@ class AccountInsight implements AccountInsightInterface
         $this->connection = $connection;
         $this->log = $log;
         $this->account_id = $account_id;
+    }
+
+    /**
+     * @var MetricInterface
+     */
+    private $metrics = [];
+
+    /**
+     * Get a supported metric as a property.
+     *
+     * @param  string          $metric
+     * @return MetricInterface
+     */
+    public function __get($metric)
+    {
+        if (empty($this->metrics[$metric])) {
+            $class_name = '\\ActiveCollab\\Insight\\AccountInsight\\Metric\\' . Inflector::classify($metric);
+
+            if (class_exists($class_name)) {
+                $this->metrics[$metric] = new $class_name();
+            } else {
+                throw new LogicException("Metric '$metric' is not currently supported");
+            }
+        }
+
+        return $this->metrics[$metric];
     }
 }

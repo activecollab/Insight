@@ -12,6 +12,7 @@
 namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
+use ActiveCollab\Insight\AccountInsight\Metric\EventsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 
 /**
@@ -24,21 +25,20 @@ class AccountInsightTest extends InsightTestCase
         $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->account(1));
     }
 
-//    /**
-//     * Test if we can get a supported metrics as properties.
-//     */
-//    public function testGetSupportedMetrics()
-//    {
-//        $this->assertInstanceOf(MrrInterface::class, $this->insight->mrr);
-//        $this->assertInstanceOf(EventsInterface::class, $this->insight->events);
-//    }
-//
-//    /**
-//     * @expectedException \LogicException
-//     * @expectedExceptionMessage Metric 'metric_that_does_not_exist' is not currently supported
-//     */
-//    public function testExceptionOnUnsupportedMetric()
-//    {
-//        $this->insight->metric_that_does_not_exist;
-//    }
+    /**
+     * Test if we can get a supported metrics as properties.
+     */
+    public function testGetSupportedMetrics()
+    {
+        $this->assertInstanceOf(EventsInterface::class, $this->insight->account(1)->events);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Metric 'metric_that_does_not_exist' is not currently supported
+     */
+    public function testExceptionOnUnsupportedMetric()
+    {
+        $this->insight->account(1)->metric_that_does_not_exist;
+    }
 }
