@@ -26,6 +26,7 @@
     },
     "require-dev": {
         "fabpot/php-cs-fixer": "~1.0",
+        "monolog/monolog": "~1.17.0",
         "phpunit/phpunit": "^5.0"
     },
     "minimum-stability": "dev",
