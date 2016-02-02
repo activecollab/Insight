@@ -11,9 +11,11 @@
 
 namespace ActiveCollab\Insight;
 
+use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Doctrine\Common\Inflector\Inflector;
 use LogicException;
+use Psr\Log\LoggerInterface;
 
 /**
  * @property \ActiveCollab\Insight\Metric\MrrInterface $mrr
@@ -22,6 +24,26 @@ use LogicException;
  */
 class Insight implements InsightInterface
 {
+    /**
+     * @var ConnectionInterface
+     */
+    private $connection;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $log;
+
+    /**
+     * @param ConnectionInterface $connection
+     * @param LoggerInterface     $log
+     */
+    public function __construct(ConnectionInterface &$connection, LoggerInterface &$log)
+    {
+        $this->connection = $connection;
+        $this->log = $log;
+    }
+
     /**
      * @var MetricInterface[]
      */

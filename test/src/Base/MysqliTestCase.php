@@ -42,7 +42,7 @@ abstract class MysqliTestCase extends TestCase
             throw new \RuntimeException('Failed to connect to database. MySQL said: ' . $this->link->connect_error);
         }
 
-        $this->connection = new MysqliConnection($this->link);
+        $this->connection = new MysqliConnection($this->link, $this->log);
     }
 
     /**

@@ -14,12 +14,12 @@ namespace ActiveCollab\Insight\Test;
 use ActiveCollab\Insight\Insight;
 use ActiveCollab\Insight\Metric\EventsInterface;
 use ActiveCollab\Insight\Metric\MrrInterface;
-use ActiveCollab\Insight\Test\Base\TestCase;
+use ActiveCollab\Insight\Test\Base\MysqliTestCase;
 
 /**
  * @package ActiveCollab\Insight\Test
  */
-class InsightMetricGetterTest extends TestCase
+class InsightMetricGetterTest extends MysqliTestCase
 {
     /**
      * @var Insight
@@ -33,7 +33,7 @@ class InsightMetricGetterTest extends TestCase
     {
         parent::setUp();
 
-        $this->insight = new Insight();
+        $this->insight = new Insight($this->connection, $this->log);
     }
 
     /**
