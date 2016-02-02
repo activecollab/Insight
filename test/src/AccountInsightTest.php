@@ -20,6 +20,9 @@ use ActiveCollab\Insight\Test\Base\InsightTestCase;
  */
 class AccountInsightTest extends InsightTestCase
 {
+    /**
+     * Test if we get a proper instance when we request account instight.
+     */
     public function testGetAccountInsight()
     {
         $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->account(1));
