@@ -50,7 +50,8 @@ trait Implementation
      */
     public function countEvents()
     {
-        return $this->getInsightRedisClient()->zcard($this->getEventsKey());
+        /** @var $this AccountInterface */
+        return $this->getMetricsStorage()->countByAccount(Event::class, $this);
     }
 
     /**
@@ -96,7 +97,13 @@ trait Implementation
         }
 
         /** @var $this AccountInterface */
-        $this->getMetricsStorage()->store(new Event($this, $event, $timestamp, $context));
+        $event = (new Event($this->getMetricsStorage()))
+            ->setName($event)
+            ->setTimestamp($timestamp)
+            ->setContext($context);
+
+
+        $this->getMetricsStorage()->store($event);
     }
 
     // ---------------------------------------------------

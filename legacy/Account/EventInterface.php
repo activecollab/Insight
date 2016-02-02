@@ -11,12 +11,13 @@
 
 namespace ActiveCollab\Insight\Account;
 
+use ActiveCollab\DatabaseConnection\Record\LoadFromRow;
 use ActiveCollab\DateValue\DateTimeValue;
 
 /**
  * @package ActiveCollab\Insight\Account
  */
-interface EventInterface extends AccountElementInterface
+interface EventInterface extends AccountElementInterface, LoadFromRow
 {
     /**
      * Get event name.

@@ -13,7 +13,6 @@ namespace ActiveCollab\Insight\Test\Base;
 
 use ActiveCollab\DatabaseConnection\Connection\MysqliConnection;
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
-use ActiveCollab\DateValue\DateTimeValue;
 
 /**
  * @package ActiveCollab\Insight\Test

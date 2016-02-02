@@ -18,6 +18,7 @@ use ActiveCollab\Insight\Account\Event;
 use ActiveCollab\Insight\AccountInterface;
 use ActiveCollab\Insight\ElementInterface;
 use ActiveCollab\Insight\StorageInterface;
+use ActiveCollab\Insight\Test\Fixtures\Account;
 use Doctrine\Common\Inflector\Inflector;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -48,10 +49,30 @@ class RelationalDatabaseStorage implements StorageInterface
     }
 
     /**
+     * Return account by account ID.
+     *
+     * @param  int              $account_id
+     * @return AccountInterface
+     */
+    public function getAccount($account_id)
+    {
+        return new Account($this, $account_id);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function store(ElementInterface $element)
     {
+        if ($element instanceof Event) {
+            $this->connection->insert($this->getStoreName(Event::class), [
+                'account_id' => $element->getAccount()->getId(),
+                'name' => $element->getName(),
+                'created_at' => $element->getTimestamp(),
+                'context' => serialize($element->getContext()),
+            ]);
+        }
+
         return $this;
     }
 
@@ -75,7 +96,7 @@ class RelationalDatabaseStorage implements StorageInterface
      */
     public function countByAccount(string $element_type, AccountInterface $account): int
     {
-        return $this->connection->count($this->getStoreName($element_type), ['`account_id`` = ?', $account->getId()]);
+        return $this->connection->count($this->getStoreName($element_type), ['`account_id` = ?', $account->getId()]);
     }
 
     /**
@@ -148,11 +169,12 @@ class RelationalDatabaseStorage implements StorageInterface
                         $this->connection->execute("CREATE TABLE `$table_name` (
                             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
                             `account_id` int(10) unsigned NOT NULL DEFAULT '0',
-                            `event` varchar(191) NOT NULL DEFAULT '',
+                            `name` varchar(191) NOT NULL DEFAULT '',
                             `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            `context` LONGTEXT,
                             PRIMARY KEY (`id`),
-                            KEY (`account_id`, `event`),
-                            KEY (`event`),
+                            KEY (`account_id`, `name`),
+                            KEY (`name`),
                             KEY (`created_at`)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
                         break;

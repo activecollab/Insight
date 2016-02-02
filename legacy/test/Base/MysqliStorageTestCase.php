@@ -17,7 +17,7 @@ use ActiveCollab\Insight\StorageInterface;
 /**
  * @package ActiveCollab\Insight\Test\Base
  */
-abstract class MysqliStorageTestCase extends TestCase
+abstract class MysqliStorageTestCase extends MysqliTestCase
 {
     /**
      * @var StorageInterface

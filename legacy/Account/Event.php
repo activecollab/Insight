@@ -14,13 +14,18 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\Account;
 
 use ActiveCollab\DateValue\DateTimeValue;
-use ActiveCollab\Insight\AccountInterface;
+use ActiveCollab\Insight\StorageInterface;
 
 /**
  * @package ActiveCollab\Insight\Account
  */
 class Event extends AccountElement implements EventInterface
 {
+    /**
+     * @var StorageInterface
+     */
+    private $storage;
+
     /**
      * @var string
      */
@@ -37,18 +42,23 @@ class Event extends AccountElement implements EventInterface
     private $context;
 
     /**
-     * @param AccountInterface $account
-     * @param string           $name
-     * @param DateTimeValue    $timestamp
-     * @param array|null       $context
+     * @param StorageInterface $storage
      */
-    public function __construct(AccountInterface $account, string $name, DateTimeValue $timestamp, array $context = null)
+    public function __construct(StorageInterface &$storage)
     {
-        $this->setAccount($account);
+        $this->storage = $storage;
+    }
 
-        $this->name = $name;
-        $this->timestamp = $timestamp;
-        $this->context = $context ?? [];
+    /**
+     * @param array $row
+     */
+    public function loadFromRow(array $row)
+    {
+        $this->setAccount($this->storage->getAccount($row['account_id']));
+
+        $this->name = $row['name'];
+        $this->timestamp = $row['created_at'];
+        $this->context = $row['context'] ? unserialize($row['context']) : [];
     }
 
     /**

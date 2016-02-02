@@ -19,6 +19,14 @@ namespace ActiveCollab\Insight;
 interface StorageInterface
 {
     /**
+     * Return account by account ID.
+     *
+     * @param  int              $account_id
+     * @return AccountInterface
+     */
+    public function getAccount($account_id);
+
+    /**
      * @param  ElementInterface $element
      * @return $this
      */
