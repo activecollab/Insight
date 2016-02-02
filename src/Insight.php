@@ -9,9 +9,12 @@
  * with this source code in the file LICENSE.
  */
 
+declare (strict_types = 1);
+
 namespace ActiveCollab\Insight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\Insight\AccountInsight\AccountInsight;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Doctrine\Common\Inflector\Inflector;
 use LogicException;
@@ -42,6 +45,23 @@ class Insight implements InsightInterface
     {
         $this->connection = $connection;
         $this->log = $log;
+    }
+
+    /**
+     * @var AccountInsight[]
+     */
+    private $account_insights = [];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function account(int $account_id)
+    {
+        if (empty($this->account_insights[$account_id])) {
+            $this->account_insights[$account_id] = new AccountInsight($this->connection, $this->log, $account_id);
+        }
+
+        return $this->account_insights[$account_id];
     }
 
     /**
