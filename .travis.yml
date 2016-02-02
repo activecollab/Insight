@@ -1,12 +1,11 @@
 language: php
 php:
-  - 5.5
-  - 5.6
-env:
-  - TEST_REDIS_CLUSTER=0
-  - TEST_REDIS_CLUSTER=1
-services: redis-server
-install: make travis-install
-before_script: make travis-before
+  - '7'
+mysql:
+  database: activecollab_insight_test
+  username: root
+  encoding: utf8mb4
+install: composer install --dev
+before_script:
+  - mysql -e 'create database if not exists activecollab_insight_test;'
 script: phpunit -c test/phpunit.xml
-after_script: make travis-after
