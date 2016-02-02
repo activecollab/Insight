@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "91ec6fef903194bd5ece52d06139ed0d",
-    "content-hash": "d2002561e66661f810dc6e7e61250bcd",
+    "hash": "28d351b6ca7325fd1234cc77d90ee2c1",
+    "content-hash": "53752dbdb986e0dc4b9d840b8bf67e14",
     "packages": [
         {
             "name": "activecollab/containeraccess",
@@ -148,56 +148,6 @@
                 "datetime"
             ],
             "time": "2015-11-26 14:01:05"
-        },
-        {
-            "name": "activecollab/resistance",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/activecollab/resistance.git",
-                "reference": "1a3902dfddd48741747b27b41e0e7143157b3ffd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/activecollab/resistance/zipball/1a3902dfddd48741747b27b41e0e7143157b3ffd",
-                "reference": "1a3902dfddd48741747b27b41e0e7143157b3ffd",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/inflector": "~1.0",
-                "ext-filter": "*",
-                "ext-json": "*",
-                "ext-mbstring": "*",
-                "ext-redis": "*",
-                "php": ">=5.5.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "ActiveCollab\\Resistance": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ilija Studen",
-                    "email": "ilija.studen@activecollab.com"
-                }
-            ],
-            "description": "Resistance is a simple Redis key manager for PHP. It does not try to be a fully featured ORM, just to make keyspace management easier.",
-            "homepage": "https://www.activecollab.com/labs/index.html",
-            "keywords": [
-                "activecollab",
-                "persistence",
-                "redis"
-            ],
-            "time": "2015-07-01 04:26:46"
         },
         {
             "name": "container-interop/container-interop",
@@ -1991,7 +1941,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "activecollab/resistance": 20,
         "activecollab/databaseconnection": 20
     },
     "prefer-stable": true,

@@ -19,7 +19,6 @@
     ],
     "require": {
         "php": ">=7.0.0",
-        "activecollab/resistance": "dev-master",
         "activecollab/databaseconnection": "dev-next",
         "doctrine/inflector" : "^1.0",
         "psr/log": "~1.0"
