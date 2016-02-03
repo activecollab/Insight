@@ -16,4 +16,10 @@ namespace ActiveCollab\Insight\AccountInsight;
  */
 interface AccountInsightInterface
 {
+    /**
+     * Return ID of the account.
+     *
+     * @return int
+     */
+    public function getAccountId(): int;
 }

@@ -61,7 +61,7 @@ class Insight implements InsightInterface
     public function account(int $account_id)
     {
         if (empty($this->account_insights[$account_id])) {
-            $this->account_insights[$account_id] = new AccountInsight($this->connection, $this->log, $account_id);
+            $this->account_insights[$account_id] = new AccountInsight($this, $this->connection, $this->log, $account_id);
         }
 
         return $this->account_insights[$account_id];

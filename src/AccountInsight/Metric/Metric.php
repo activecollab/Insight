@@ -12,6 +12,8 @@
 namespace ActiveCollab\Insight\AccountInsight\Metric;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
+use ActiveCollab\Insight\InsightInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,6 +21,16 @@ use Psr\Log\LoggerInterface;
  */
 abstract class Metric implements MetricInterface
 {
+    /**
+     * @var AccountInsightInterface
+     */
+    protected $account;
+
+    /**
+     * @var InsightInterface
+     */
+    protected $insight;
+
     /**
      * @var ConnectionInterface
      */
@@ -30,11 +42,15 @@ abstract class Metric implements MetricInterface
     protected $log;
 
     /**
-     * @param ConnectionInterface $connection
-     * @param LoggerInterface     $log
+     * @param AccountInsightInterface $account
+     * @param InsightInterface        $insight
+     * @param ConnectionInterface     $connection
+     * @param LoggerInterface         $log
      */
-    public function __construct(ConnectionInterface &$connection, LoggerInterface &$log)
+    public function __construct(AccountInsightInterface &$account, InsightInterface &$insight, ConnectionInterface &$connection, LoggerInterface &$log)
     {
+        $this->account = $account;
+        $this->insight = $insight;
         $this->connection = $connection;
         $this->log = $log;
     }

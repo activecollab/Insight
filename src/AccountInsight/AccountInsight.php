@@ -15,6 +15,7 @@ namespace ActiveCollab\Insight\AccountInsight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\Insight\AccountInsight\Metric\MetricInterface;
+use ActiveCollab\Insight\InsightInterface;
 use Doctrine\Common\Inflector\Inflector;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -25,6 +26,11 @@ use Psr\Log\LoggerInterface;
  */
 class AccountInsight implements AccountInsightInterface
 {
+    /**
+     * @var InsightInterface
+     */
+    protected $insight;
+
     /**
      * @var ConnectionInterface
      */
@@ -41,15 +47,25 @@ class AccountInsight implements AccountInsightInterface
     private $account_id;
 
     /**
+     * @param InsightInterface    $insight
      * @param ConnectionInterface $connection
      * @param LoggerInterface     $log
      * @param int                 $account_id
      */
-    public function __construct(ConnectionInterface &$connection, LoggerInterface &$log, int $account_id)
+    public function __construct(InsightInterface &$insight, ConnectionInterface &$connection, LoggerInterface &$log, int $account_id)
     {
+        $this->insight = $insight;
         $this->connection = $connection;
         $this->log = $log;
         $this->account_id = $account_id;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAccountId(): int
+    {
+        return $this->account_id;
     }
 
     /**
@@ -69,7 +85,7 @@ class AccountInsight implements AccountInsightInterface
             $class_name = '\\ActiveCollab\\Insight\\AccountInsight\\Metric\\' . Inflector::classify($metric);
 
             if (class_exists($class_name)) {
-                $this->metrics[$metric] = new $class_name($this->connection, $this->log);
+                $this->metrics[$metric] = new $class_name($this, $this->insight, $this->connection, $this->log);
             } else {
                 throw new LogicException("Metric '$metric' is not currently supported");
             }
