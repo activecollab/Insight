@@ -11,9 +11,31 @@
 
 namespace ActiveCollab\Insight\Metric;
 
+use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use Psr\Log\LoggerInterface;
+
 /**
  * @package ActiveCollab\Insight\Metric
  */
 abstract class Metric implements MetricInterface
 {
+    /**
+     * @var ConnectionInterface
+     */
+    protected $connection;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $log;
+
+    /**
+     * @param ConnectionInterface $connection
+     * @param LoggerInterface     $log
+     */
+    public function __construct(ConnectionInterface &$connection, LoggerInterface &$log)
+    {
+        $this->connection = $connection;
+        $this->log = $log;
+    }
 }

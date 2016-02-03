@@ -81,12 +81,40 @@ class Insight implements InsightInterface
             $class_name = '\\ActiveCollab\\Insight\\Metric\\' . Inflector::classify($metric);
 
             if (class_exists($class_name)) {
-                $this->metrics[$metric] = new $class_name();
+                $this->metrics[$metric] = new $class_name($this->connection, $this->log);
             } else {
                 throw new LogicException("Metric '$metric' is not currently supported");
             }
         }
 
         return $this->metrics[$metric];
+    }
+
+    /**
+     * @var string
+     */
+    private $table_prefix = 'insight_';
+
+    /**
+     * Return table prefix.
+     *
+     * @return string
+     */
+    public function getTablePrefix(): string
+    {
+        return $this->table_prefix;
+    }
+
+    /**
+     * Set table prefix.
+     *
+     * @param  string $value
+     * @return $this
+     */
+    public function &setTablePrefix(string $value)
+    {
+        $this->table_prefix = trim($value);
+
+        return $this;
     }
 }

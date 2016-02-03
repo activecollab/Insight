@@ -27,4 +27,19 @@ interface InsightInterface
      * @return AccountInsightInterface
      */
     public function account(int $account_id);
+
+    /**
+     * Return table prefix.
+     *
+     * @return string
+     */
+    public function getTablePrefix(): string;
+
+    /**
+     * Set table prefix.
+     *
+     * @param  string $value
+     * @return $this
+     */
+    public function &setTablePrefix(string $value);
 }

@@ -69,7 +69,7 @@ class AccountInsight implements AccountInsightInterface
             $class_name = '\\ActiveCollab\\Insight\\AccountInsight\\Metric\\' . Inflector::classify($metric);
 
             if (class_exists($class_name)) {
-                $this->metrics[$metric] = new $class_name();
+                $this->metrics[$metric] = new $class_name($this->connection, $this->log);
             } else {
                 throw new LogicException("Metric '$metric' is not currently supported");
             }
