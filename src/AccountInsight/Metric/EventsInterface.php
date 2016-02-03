@@ -36,7 +36,14 @@ interface EventsInterface extends MetricInterface
      * @param  int   $per_page
      * @return array
      */
-    public function get($page = 1, $per_page = 100);
+    public function get(int $page = 1, int $per_page = 100);
+
+    /**
+     * Return all events.
+     *
+     * @return array
+     */
+    public function all();
 
     /**
      * Return number of events that are logged.

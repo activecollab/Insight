@@ -17,6 +17,7 @@ use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\InsightInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -55,9 +56,27 @@ class Events extends Metric implements EventsInterface
     /**
      * {@inheritdoc}
      */
-    public function get($page = 1, $per_page = 100)
+    public function get(int $page = 1, int $per_page = 100)
     {
+        if ($page < 1) {
+            throw new InvalidArgumentException('Page value needs to be 1 or more');
+        }
 
+        if ($page < 1) {
+            throw new InvalidArgumentException('Events per page value needs to be 1 or more');
+        }
+
+        $offset = ($page - 1) * $per_page;
+
+        return $this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC LIMIT {$offset}, $per_page", $this->account->getAccountId());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function all()
+    {
+        return $this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC", $this->account->getAccountId());
     }
 
     /**
