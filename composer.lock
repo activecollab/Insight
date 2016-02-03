@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/activecollab/databaseconnection.git",
-                "reference": "1ba7370dd63d68d924f92c5ee9edbfd751049f4c"
+                "reference": "a323a2476875ee69af895392bab48e62dbec781a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/activecollab/databaseconnection/zipball/1ba7370dd63d68d924f92c5ee9edbfd751049f4c",
-                "reference": "1ba7370dd63d68d924f92c5ee9edbfd751049f4c",
+                "url": "https://api.github.com/repos/activecollab/databaseconnection/zipball/a323a2476875ee69af895392bab48e62dbec781a",
+                "reference": "a323a2476875ee69af895392bab48e62dbec781a",
                 "shasum": ""
             },
             "require": {
@@ -74,6 +74,7 @@
                 "psr/log": "~1.0.0"
             },
             "require-dev": {
+                "fabpot/php-cs-fixer": "~1.0",
                 "phpunit/phpunit": "~5.0",
                 "pimple/pimple": "~3.0.0"
             },
@@ -100,7 +101,7 @@
                 "activecollab",
                 "mysql"
             ],
-            "time": "2016-01-05 08:27:13"
+            "time": "2016-02-03 09:52:49"
         },
         {
             "name": "activecollab/datevalue",

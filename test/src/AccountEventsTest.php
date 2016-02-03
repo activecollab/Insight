@@ -1,8 +1,16 @@
 <?php
 
+/*
+ * This file is part of the Active Collab Insight.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace ActiveCollab\Insight\Test;
 
-use ActiveCollab\DatabaseConnection\Result\ResultInterface;
 use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\Insight\Test\Base\AccountInsightTestCase;
 
@@ -24,6 +32,24 @@ class AccountEventsTest extends AccountInsightTestCase
 
         $this->assertEquals(4, $this->connection->count($this->insight->getTableName('events')));
         $this->assertEquals(3, $this->account->events->count());
+    }
+
+    /**
+     * Test if context is properly encoded and decoded JSON.
+     */
+    public function testContextIsDecoded()
+    {
+        $this->account->events->add('Weather is fine');
+        $this->account->events->add('Project Created', null, ['project_id' => 12]);
+
+        $project_event = $this->account->events->all()[0];
+        $weather_event = $this->account->events->all()[1];
+
+        $this->assertEquals('Project Created', $project_event['name']);
+        $this->assertSame(['project_id' => 12], $project_event['context']);
+
+        $this->assertEquals('Weather is fine', $weather_event['name']);
+        $this->assertSame([], $weather_event['context']);
     }
 
     /**
@@ -77,7 +103,7 @@ class AccountEventsTest extends AccountInsightTestCase
             $this->account->events->add("Event {$i}");
         }
 
-        $all_events = $this->account->events->all(1, 5);
+        $all_events = $this->account->events->all();
 
         $this->assertCount(11, $all_events);
 

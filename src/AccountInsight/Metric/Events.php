@@ -14,6 +14,9 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\AccountInsight\Metric;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\DatabaseConnection\Record\ValueCaster;
+use ActiveCollab\DatabaseConnection\Record\ValueCasterInterface;
+use ActiveCollab\DatabaseConnection\Result\ResultInterface;
 use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\InsightInterface;
@@ -68,7 +71,7 @@ class Events extends Metric implements EventsInterface
 
         $offset = ($page - 1) * $per_page;
 
-        return $this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC LIMIT {$offset}, $per_page", $this->account->getAccountId());
+        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC, id DESC LIMIT {$offset}, $per_page", $this->account->getAccountId()));
     }
 
     /**
@@ -76,7 +79,29 @@ class Events extends Metric implements EventsInterface
      */
     public function all()
     {
-        return $this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC", $this->account->getAccountId());
+        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC, id DESC", $this->account->getAccountId()));
+    }
+
+    /**
+     * @var ValueCasterInterface
+     */
+    private $value_caster;
+
+    /**
+     * @param  ResultInterface|null  $result
+     * @return ResultInterface|array
+     */
+    private function castResult(ResultInterface $result = null)
+    {
+        if (empty($this->value_caster)) {
+            $this->value_caster = new ValueCaster(['context' => ValueCasterInterface::CAST_JSON]);
+        }
+
+        if ($result) {
+            return $result->setValueCaster($this->value_caster);
+        } else {
+            return [];
+        }
     }
 
     /**
