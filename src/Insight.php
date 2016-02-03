@@ -17,6 +17,7 @@ use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Doctrine\Common\Inflector\Inflector;
+use InvalidArgumentException;
 use LogicException;
 use Psr\Log\LoggerInterface;
 
@@ -45,6 +46,8 @@ class Insight implements InsightInterface
     {
         $this->connection = $connection;
         $this->log = $log;
+
+        $this->existing_tables = $this->connection->getTableNames();
     }
 
     /**
@@ -116,5 +119,47 @@ class Insight implements InsightInterface
         $this->table_prefix = trim($value);
 
         return $this;
+    }
+
+    /**
+     * @var string[]
+     */
+    private $existing_tables = [];
+
+    /**
+     * Return prefixed table name and make sure that table exists.
+     *
+     * @param  string $table_name
+     * @return string
+     */
+    public function getTableName($table_name): string
+    {
+        $prefixed_table_name = $this->getTablePrefix() . $table_name;
+
+        if (!in_array($prefixed_table_name, $this->existing_tables)) {
+            switch ($table_name) {
+                case 'events':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                        `account_id` int(10) unsigned NOT NULL DEFAULT '0',
+                        `name` varchar(191) NOT NULL DEFAULT '',
+                        `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        `context` JSON,
+                        PRIMARY KEY (`id`),
+                        KEY (`account_id`, `name`),
+                        KEY (`name`),
+                        KEY (`created_at`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    break;
+
+                default:
+                    throw new InvalidArgumentException("Table '$table_name' is not known");
+            }
+
+            $this->existing_tables[] = $prefixed_table_name;
+        }
+
+        return $prefixed_table_name;
     }
 }

@@ -42,4 +42,12 @@ interface InsightInterface
      * @return $this
      */
     public function &setTablePrefix(string $value);
+
+    /**
+     * Return prefixed table name and make sure that table exists.
+     *
+     * @param  string $table_name
+     * @return string
+     */
+    public function getTableName($table_name): string;
 }

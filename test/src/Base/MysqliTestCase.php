@@ -50,6 +50,10 @@ abstract class MysqliTestCase extends TestCase
      */
     public function tearDown()
     {
+        foreach ($this->connection->getTableNames() as $table_name) {
+            $this->connection->dropTable($table_name);
+        }
+
         $this->connection->disconnect();
 
         parent::tearDown();
