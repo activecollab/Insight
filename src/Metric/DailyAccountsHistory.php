@@ -19,6 +19,19 @@ use ActiveCollab\DateValue\DateValue;
 class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterface
 {
     /**
+     * @var string
+     */
+    private $daily_accounts_history_table;
+
+    /**
+     * {@inheritdocs}
+     */
+    protected function configure()
+    {
+        $this->daily_accounts_history_table = $this->insight->getTableName('daily_accounts_history');
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getDayId(DateValue $day = null): int
@@ -27,10 +40,10 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
             $day = new DateValue();
         }
 
-        if ($day_id = $this->connection->executeFirstCell("SELECT `id` FROM {$this->insight->getTableName('daily_accounts_history')} WHERE day = ?", $day)) {
+        if ($day_id = $this->connection->executeFirstCell("SELECT `id` FROM `$this->daily_accounts_history_table` WHERE `day` = ?", $day)) {
             return $day_id;
         } else {
-            $this->connection->insert($this->insight->getTableName('daily_accounts_history'), ['day' => $day]);
+            $this->connection->insert($this->daily_accounts_history_table, ['day' => $day]);
             return $this->connection->lastInsertId();
         }
     }
@@ -45,6 +58,7 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
      */
     public function newAccount(int $account_id, bool $is_trial = false, float $mrr_value = 0.0, DateValue $day = null)
     {
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `new_accounts` = `new_accounts` + 1 WHERE `id` = ?", $this->getDayId($day));
     }
 
     /**

@@ -45,5 +45,14 @@ abstract class Metric implements MetricInterface
         $this->insight = $insight;
         $this->connection = $connection;
         $this->log = $log;
+
+        $this->configure();
+    }
+
+    /**
+     * Do post-construction confirguration.
+     */
+    protected function configure()
+    {
     }
 }

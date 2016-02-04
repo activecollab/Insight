@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 
 /**
@@ -33,11 +34,13 @@ class DailyAccountsHistoryTest extends InsightTestCase
      */
     public function testGetDayIdCretesRow()
     {
-        $this->assertEquals(0, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
-        $this->assertSame(1, $this->insight->daily_accounts_history->getDayId());
-        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
+        $daily_accounts_history_table = $this->insight->getTableName('daily_accounts_history');
 
-        $row = $this->connection->executeFirstRow('SELECT * FROM insight_daily_accounts_history WHERE id = ?', 1);
+        $this->assertEquals(0, $this->connection->count($daily_accounts_history_table));
+        $this->assertSame(1, $this->insight->daily_accounts_history->getDayId());
+        $this->assertEquals(1, $this->connection->count($daily_accounts_history_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM $daily_accounts_history_table WHERE id = ?", 1);
         $this->assertInternalType('array', $row);
 
         foreach ($row as $k => $v) {
@@ -50,4 +53,36 @@ class DailyAccountsHistoryTest extends InsightTestCase
             }
         }
     }
+
+    /**
+     * Confirm that new acount increases number of new daily accounts.
+     */
+    public function testNewAccountIncreasesDailyCounter()
+    {
+        $this->insight->daily_accounts_history->newAccount(12345, false, 15);
+
+        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('daily_accounts_history')} WHERE id = ?", 1);
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['new_accounts']);
+
+        $this->insight->daily_accounts_history->newAccount(12345, false, 25);
+        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
+        $this->assertEquals(2, $this->connection->executeFirstCell("SELECT `new_accounts` FROM {$this->insight->getTableName('daily_accounts_history')} WHERE id = ?", 1));
+
+        $this->insight->daily_accounts_history->newAccount(12345, false, 25, new DateValue('2016-02-01'));
+        $this->assertEquals(2, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT `new_accounts` FROM {$this->insight->getTableName('daily_accounts_history')} WHERE id = ?", 2));
+    }
+
+//    public function testNewAccountUpdatesDailyMrr()
+//    {
+//
+//    }
+//
+//    public function testNewTrialAccount()
+//    {
+//
+//    }
 }
