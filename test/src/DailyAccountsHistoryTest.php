@@ -76,13 +76,54 @@ class DailyAccountsHistoryTest extends InsightTestCase
         $this->assertEquals(1, $this->connection->executeFirstCell("SELECT `new_accounts` FROM {$this->insight->getTableName('daily_accounts_history')} WHERE id = ?", 2));
     }
 
-//    public function testNewAccountUpdatesDailyMrr()
-//    {
-//
-//    }
-//
-//    public function testNewTrialAccount()
-//    {
-//
-//    }
+    /**
+     * Test new paid account adds an MRR record to daily accounts MRR log.
+     */
+    public function testNewAccountUpdatesDailyMrr()
+    {
+        $this->assertEquals(0, $this->connection->count($this->insight->getTableName('daily_account_mrr')));
+        $this->insight->daily_accounts_history->newAccount(12345, false, 15);
+        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('daily_account_mrr')));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('daily_account_mrr')} WHERE id = ?", 1);
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(12345, $row['account_id']);
+        $this->assertEquals(date('Y-m-d'), $row['day']);
+        $this->assertEquals(15, $row['mrr_value']);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage MRR value can't be negative for new accounts
+     */
+    public function testNewAccountCantHaveNegativeMrr()
+    {
+        $this->insight->daily_accounts_history->newAccount(12345, false, -15);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Trial accounts should not have MRR value
+     */
+    public function testNewTrialWithMrrValueRaisesLogicException()
+    {
+        $this->insight->daily_accounts_history->newAccount(12345, true, 15);
+    }
+
+    /**
+     * Test if new trial properly logs a new account.
+     */
+    public function testNewTrialAccountIncreasesDailyCounters()
+    {
+        $this->insight->daily_accounts_history->newTrial(12345);
+
+        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('daily_accounts_history')));
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('daily_accounts_history')} WHERE id = ?", 1);
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['new_accounts']);
+
+        $this->assertEquals(0, $this->connection->count($this->insight->getTableName('daily_account_mrr')));
+    }
 }

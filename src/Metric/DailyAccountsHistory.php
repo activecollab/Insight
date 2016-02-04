@@ -11,7 +11,9 @@
 
 namespace ActiveCollab\Insight\Metric;
 
+use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DateValue\DateValue;
+use LogicException;
 
 /**
  * @package ActiveCollab\Insight\Metric
@@ -24,11 +26,17 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
     private $daily_accounts_history_table;
 
     /**
-     * {@inheritdocs}
+     * @var string
+     */
+    private $daily_account_mrr_table;
+
+    /**
+     * {@inheritdoc}
      */
     protected function configure()
     {
         $this->daily_accounts_history_table = $this->insight->getTableName('daily_accounts_history');
+        $this->daily_account_mrr_table = $this->insight->getTableName('daily_account_mrr');
     }
 
     /**
@@ -44,94 +52,87 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
             return $day_id;
         } else {
             $this->connection->insert($this->daily_accounts_history_table, ['day' => $day]);
+
             return $this->connection->lastInsertId();
         }
     }
 
     /**
-     * Record that new account is added.
-     *
-     * @param int            $account_id
-     * @param bool           $is_trial
-     * @param float          $mrr_value
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
-    public function newAccount(int $account_id, bool $is_trial = false, float $mrr_value = 0.0, DateValue $day = null)
+    public function newAccount(int $account_id, bool $is_trial = false, float $mrr_value = 0, DateValue $day = null)
     {
+        if ($is_trial && $mrr_value != 0) {
+            throw new LogicException('Trial accounts should not have MRR value');
+        }
+
+        if ($mrr_value < 0) {
+            throw new LogicException("MRR value can't be negative for new accounts");
+        }
+
         $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `new_accounts` = `new_accounts` + 1 WHERE `id` = ?", $this->getDayId($day));
+
+        if (!$is_trial && $mrr_value > 0) {
+            $this->connection->insert($this->daily_account_mrr_table, [
+                'account_id' => $account_id,
+                'day' => $day ?? new DateValue(),
+                'mrr_value' => $mrr_value,
+            ], ConnectionInterface::REPLACE);
+        }
     }
 
     /**
-     * Record that new trial is created.
-     *
-     * @param int            $account_id
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newTrial(int $account_id, DateValue $day = null)
     {
+        $this->newAccount($account_id, false, 0, $day);
     }
 
     /**
-     * Record that new trial was created from a free account.
-     *
-     * @param int            $account_id
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newFreeToTrial(int $account_id, DateValue $day = null)
     {
     }
 
     /**
-     * Record that trial converted to free account.
-     *
-     * @param int            $account_id
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newTrialToFree(int $account_id, DateValue $day = null)
     {
     }
 
     /**
-     * Record that trial converted to paid account.
-     *
-     * @param int            $account_id
-     * @param float          $mrr_value
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newTrialToPaid(int $account_id, float $mrr_value = 0, DateValue $day = null)
     {
     }
 
     /**
-     * @param int            $account_id
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newCancelation(int $account_id, DateValue $day = null)
     {
     }
 
     /**
-     * @param int            $account_id
-     * @param float          $mrr_value
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newUpgrade(int $account_id, float $mrr_value = 0, DateValue $day = null)
     {
     }
 
     /**
-     * @param int            $account_id
-     * @param float          $mrr_value
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newDowngrade(int $account_id, float $mrr_value = 0, DateValue $day = null)
     {
     }
 
     /**
-     * @param int            $account_id
-     * @param float          $mrr_value
-     * @param DateValue|null $day
+     * {@inheritdoc}
      */
     public function newPeriodChange(int $account_id, float $mrr_value = 0, DateValue $day = null)
     {

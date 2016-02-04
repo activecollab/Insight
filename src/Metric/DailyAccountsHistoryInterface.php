@@ -39,6 +39,16 @@ interface DailyAccountsHistoryInterface extends MetricInterface
     public function newAccount(int $account_id, bool $is_trial = false, float $mrr_value = 0, DateValue $day = null);
 
     /**
+     * Record that new trial account is added.
+     *
+     * This method is just a shorter way to call newAccount() when trial account is created.
+     *
+     * @param int            $account_id
+     * @param DateValue|null $day
+     */
+    public function newTrial(int $account_id, DateValue $day = null);
+
+    /**
      * Record that new trial was created from a free account.
      *
      * @param int            $account_id

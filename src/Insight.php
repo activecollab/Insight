@@ -142,7 +142,7 @@ class Insight implements InsightInterface
                 case 'daily_accounts_history':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-                        `day` DATE,
+                        `day` DATE NOT NULL,
                         `new_accounts` int unsigned NOT NULL DEFAULT '0',
                         `conversions_to_trial` int unsigned NOT NULL DEFAULT '0',
                         `conversions_to_free` int unsigned NOT NULL DEFAULT '0',
@@ -167,12 +167,20 @@ class Insight implements InsightInterface
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` bigint unsigned NOT NULL AUTO_INCREMENT,
                         `account_id` int(10) unsigned NOT NULL DEFAULT '0',
-                        `day` DATE DEFAULT CURRENT_TIMESTAMP,
+                        `day` DATE NOT NULL,
                         `mrr_value` DECIMAL(13,3) DEFAULT '0',
                         PRIMARY KEY (`id`),
                         UNIQUE (`account_id`, `day`),
-                        KEY (`day`),
+                        KEY (`day`)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `daily_account_mrr_default_day`');
+                    $this->connection->execute("CREATE TRIGGER `daily_account_mrr_default_day` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
+                        BEGIN
+                            IF NEW.day IS NULL THEN
+                                SET NEW.day = DATE(UTC_TIMESTAMP());
+                            END IF;
+                        END");
 
                     break;
                 case 'events':
