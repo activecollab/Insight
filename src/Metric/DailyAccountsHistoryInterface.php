@@ -57,6 +57,15 @@ interface DailyAccountsHistoryInterface extends MetricInterface
     public function newFreeToTrial(int $account_id, DateValue $day = null);
 
     /**
+     * Record that free account converted to paid account.
+     *
+     * @param int            $account_id
+     * @param float          $mrr_value
+     * @param DateValue|null $day
+     */
+    public function newFreeToPaid(int $account_id, float $mrr_value, DateValue $day = null);
+
+    /**
      * Record that trial converted to free account.
      *
      * @param int            $account_id
@@ -71,7 +80,7 @@ interface DailyAccountsHistoryInterface extends MetricInterface
      * @param float          $mrr_value
      * @param DateValue|null $day
      */
-    public function newTrialToPaid(int $account_id, float $mrr_value = 0, DateValue $day = null);
+    public function newTrialToPaid(int $account_id, float $mrr_value, DateValue $day = null);
 
     /**
      * @param int            $account_id
