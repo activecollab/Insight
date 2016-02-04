@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\Insight\Metric\DailyAccountsHistoryInterface;
 use ActiveCollab\Insight\Metric\EventsInterface;
 use ActiveCollab\Insight\Metric\MrrInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
@@ -25,8 +26,9 @@ class InsightMetricGetterTest extends InsightTestCase
      */
     public function testGetSupportedMetrics()
     {
-        $this->assertInstanceOf(MrrInterface::class, $this->insight->mrr);
+        $this->assertInstanceOf(DailyAccountsHistoryInterface::class, $this->insight->daily_accounts_history);
         $this->assertInstanceOf(EventsInterface::class, $this->insight->events);
+        $this->assertInstanceOf(MrrInterface::class, $this->insight->mrr);
     }
 
     /**

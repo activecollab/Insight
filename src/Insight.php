@@ -22,8 +22,9 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 
 /**
- * @property \ActiveCollab\Insight\Metric\MrrInterface $mrr
- * @property \ActiveCollab\Insight\Metric\EventsInterface $events
+ * @property \ActiveCollab\Insight\Metric\MrrInterface                  $mrr
+ * @property \ActiveCollab\Insight\Metric\EventsInterface               $events
+ * @property \ActiveCollab\Insight\Metric\DailyAccountsHistoryInterface $daily_accounts_history
  * @package ActiveCollab\Insight
  */
 class Insight implements InsightInterface
@@ -84,7 +85,7 @@ class Insight implements InsightInterface
             $class_name = '\\ActiveCollab\\Insight\\Metric\\' . Inflector::classify($metric);
 
             if (class_exists($class_name)) {
-                $this->metrics[$metric] = new $class_name($this->connection, $this->log);
+                $this->metrics[$metric] = new $class_name($this, $this->connection, $this->log);
             } else {
                 throw new LogicException("Metric '$metric' is not currently supported");
             }
@@ -138,6 +139,42 @@ class Insight implements InsightInterface
 
         if (!in_array($prefixed_table_name, $this->existing_tables)) {
             switch ($table_name) {
+                case 'daily_accounts_history':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                        `day` DATE,
+                        `new_accounts` int unsigned NOT NULL DEFAULT '0',
+                        `conversions_to_trial` int unsigned NOT NULL DEFAULT '0',
+                        `conversions_to_free` int unsigned NOT NULL DEFAULT '0',
+                        `conversions_to_paid` int unsigned NOT NULL DEFAULT '0',
+                        `upgrades` int unsigned NOT NULL DEFAULT '0',
+                        `downgrades` int unsigned NOT NULL DEFAULT '0',
+                        `cancelations` int unsigned NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `daily_accounts_history_default_day`');
+                    $this->connection->execute("CREATE TRIGGER `daily_accounts_history_default_day` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
+                        BEGIN
+                            IF NEW.day IS NULL THEN
+                                SET NEW.day = DATE(UTC_TIMESTAMP());
+                            END IF;
+                        END");
+
+                    break;
+                case 'daily_account_mrr':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                        `account_id` int(10) unsigned NOT NULL DEFAULT '0',
+                        `day` DATE DEFAULT CURRENT_TIMESTAMP,
+                        `mrr_value` DECIMAL(13,3) DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`account_id`, `day`),
+                        KEY (`day`),
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    break;
                 case 'events':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
