@@ -9,9 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
+declare (strict_types = 1);
+
 namespace ActiveCollab\Insight\Metric;
 
-use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DateValue\DateValue;
 use LogicException;
 
@@ -68,6 +69,10 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
 
         if ($mrr_value < 0) {
             throw new LogicException("MRR value can't be negative for new accounts");
+        }
+
+        if (!is_bool($is_trial)) {
+            throw new LogicException('You have an error in your logic');
         }
 
         $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `new_accounts` = `new_accounts` + 1 WHERE `id` = ?", $this->getDayId($day));
@@ -151,14 +156,20 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function newUpgrade(int $account_id, float $mrr_value = 0, DateValue $day = null)
+    public function newUpgrade(int $account_id, float $mrr_value, DateValue $day = null)
     {
+        if ($mrr_value <= 0) {
+            throw new LogicException('Paid accounts should have MRR value');
+        }
+
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `upgrades` = `upgrades` + 1 WHERE `id` = ?", $this->getDayId($day));
+        $this->recordMrrOnDay($account_id, $mrr_value, $day);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function newDowngrade(int $account_id, float $mrr_value = 0, DateValue $day = null)
+    public function newDowngrade(int $account_id, float $mrr_value, DateValue $day = null)
     {
     }
 
@@ -178,10 +189,14 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
      */
     private function recordMrrOnDay(int $account_id, float $mrr_value = 0, DateValue $day = null)
     {
-        $this->connection->insert($this->daily_account_mrr_table, [
-            'account_id' => $account_id,
-            'day' => $day ?? new DateValue(),
-            'mrr_value' => $mrr_value,
-        ], ConnectionInterface::REPLACE);
+        $day = $day ?? new DateValue();
+
+        if ($this->connection->count($this->daily_account_mrr_table, ['account_id = ? AND day = ?', $account_id, $day])) {
+            $this->connection->update($this->daily_account_mrr_table, [
+                'mrr_value' => $mrr_value
+            ], ['account_id = ? AND day = ?', $account_id, $day]);
+        } else {
+            $this->connection->insert($this->daily_account_mrr_table, ['account_id' => $account_id, 'day' => $day, 'mrr_value' => $mrr_value]);
+        }
     }
 }

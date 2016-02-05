@@ -94,14 +94,14 @@ interface DailyAccountsHistoryInterface extends MetricInterface
      * @param float          $mrr_value
      * @param DateValue|null $day
      */
-    public function newUpgrade(int $account_id, float $mrr_value = 0, DateValue $day = null);
+    public function newUpgrade(int $account_id, float $mrr_value, DateValue $day = null);
 
     /**
      * @param int            $account_id
      * @param float          $mrr_value
      * @param DateValue|null $day
      */
-    public function newDowngrade(int $account_id, float $mrr_value = 0, DateValue $day = null);
+    public function newDowngrade(int $account_id, float $mrr_value, DateValue $day = null);
 
     /**
      * @param int            $account_id
