@@ -17,6 +17,7 @@ use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
+use DateTimeInterface;
 use RuntimeException;
 
 /**
@@ -40,7 +41,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period): AccountInsightInterface
+    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeInterface $timestamp = null): AccountInsightInterface
     {
         $mrr = $plan->getMrrValue($billing_period);
 
@@ -51,7 +52,7 @@ class Accounts extends Metric implements AccountsInterface
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::PAID,
-            'created_at' => new DateTimeValue(),
+            'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => $mrr,
         ]);
 
@@ -61,12 +62,12 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addTrial(int $account_id): AccountInsightInterface
+    public function addTrial(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::TRIAL,
-            'created_at' => new DateTimeValue(),
+            'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => 0,
         ]);
 
@@ -76,12 +77,12 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addFree(int $account_id): AccountInsightInterface
+    public function addFree(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::FREE,
-            'created_at' => new DateTimeValue(),
+            'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => 0,
         ]);
 

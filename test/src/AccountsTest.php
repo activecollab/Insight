@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
@@ -103,12 +104,30 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
+     * Test if we can specify a custom creation timestamp for a paid plan.
+     */
+    public function testNewPaidAccountCanHaveCustomTimestamp()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::PAID, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(499, $row['mrr_value']);
+    }
+
+    /**
      * Test if adding a yearly paid plan records correct values.
      */
     public function testNewPaidYearlyAccountAddValidRecord()
     {
-        $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
-        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly(), new DateValue('2015-12-05'));
         $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
 
         $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
@@ -116,9 +135,9 @@ class AccountsTest extends InsightTestCase
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
-        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
-        $this->assertEquals(date('Y'), $row['cohort_year']);
-        $this->assertEquals(date('m'), $row['cohort_month']);
+        $this->assertEquals('2015-12-05 00:00:00', $row['created_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals(2015, $row['cohort_year']);
+        $this->assertEquals(12, $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(499, $row['mrr_value']);
     }

@@ -144,7 +144,7 @@ class Insight implements InsightInterface
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL,
                         `status` ENUM('trial', 'free', 'paid') NOT NULL,
-                        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        `created_at` DATETIME NOT NULL,
                         `cohort_month` TINYINT unsigned NOT NULL,
                         `cohort_year` SMALLINT unsigned NOT NULL,
                         `canceled_at` DATETIME NULL,
@@ -157,8 +157,8 @@ class Insight implements InsightInterface
                     $this->connection->execute('DROP TRIGGER IF EXISTS `account_cohort`');
                     $this->connection->execute("CREATE TRIGGER `account_cohort` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
                         BEGIN
-                            SET NEW.cohort_month = MONTH(UTC_TIMESTAMP());
-                            SET NEW.cohort_year = YEAR(UTC_TIMESTAMP());
+                            SET NEW.cohort_month = MONTH(NEW.created_at);
+                            SET NEW.cohort_year = YEAR(NEW.created_at);
                         END");
 
                     break;
