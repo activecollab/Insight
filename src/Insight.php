@@ -149,6 +149,7 @@ class Insight implements InsightInterface
                         `conversions_to_paid` int unsigned NOT NULL DEFAULT '0',
                         `upgrades` int unsigned NOT NULL DEFAULT '0',
                         `downgrades` int unsigned NOT NULL DEFAULT '0',
+                        `period_changes` int unsigned NOT NULL DEFAULT '0',
                         `free_cancelations` int unsigned NOT NULL DEFAULT '0',
                         `paid_cancelations` int unsigned NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),

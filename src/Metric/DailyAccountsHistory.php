@@ -192,8 +192,14 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function newPeriodChange(int $account_id, float $mrr_value = 0, DateValue $day = null)
+    public function newPeriodChange(int $account_id, float $mrr_value, DateValue $day = null)
     {
+        if ($mrr_value <= 0) {
+            throw new LogicException('Paid accounts should have MRR value');
+        }
+
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `period_changes` = `period_changes` + 1 WHERE `id` = ?", $this->getDayId($day));
+        $this->recordMrrOnDay($account_id, $mrr_value, $day);
     }
 
     /**
