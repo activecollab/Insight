@@ -171,6 +171,22 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
      */
     public function newDowngrade(int $account_id, float $mrr_value, DateValue $day = null)
     {
+        if ($mrr_value < 0) {
+            throw new LogicException('MRR lost value should be 0 or more');
+        }
+
+        $conditions = $this->connection->prepareConditions(['account_id = ? AND day = ?', $account_id, $day ?? new DateValue()]);
+
+        if ($this->connection->count($this->daily_account_mrr_table, $conditions)) {
+            $current_mrr_value = (float) $this->connection->executeFirstCell("SELECT `mrr_value` FROM `$this->daily_account_mrr_table` WHERE $conditions");
+
+            if ($current_mrr_value <= $mrr_value) {
+                throw new LogicException('MRR value when dowgrading needs to be lower than current account MRR value');
+            }
+        }
+
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `downgrades` = `downgrades` + 1 WHERE `id` = ?", $this->getDayId($day));
+        $this->recordMrrOnDay($account_id, $mrr_value, $day);
     }
 
     /**
