@@ -59,6 +59,8 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::TRIAL, $row['status']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
     }
@@ -86,6 +88,8 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::FREE, $row['status']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
     }
@@ -113,6 +117,8 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(499, $row['mrr_value']);
     }
@@ -132,6 +138,8 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(99, $row['mrr_value']);
     }
