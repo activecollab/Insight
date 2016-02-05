@@ -13,6 +13,7 @@ declare (strict_types = 1);
 
 namespace ActiveCollab\Insight\Metric;
 
+use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
 
@@ -30,21 +31,24 @@ interface AccountsInterface
     /**
      * Add a new paid account to the.
      *
-     * @param int                    $account_id
-     * @param PlanInterface          $plan
-     * @param BillingPeriodInterface $billing_period
+     * @param  int                     $account_id
+     * @param  PlanInterface           $plan
+     * @param  BillingPeriodInterface  $billing_period
+     * @return AccountInsightInterface
      */
-    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period);
+    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period): AccountInsightInterface;
 
     /**
-     * @param int $account_id
+     * @param  int                     $account_id
+     * @return AccountInsightInterface
      */
-    public function addTrial(int $account_id);
+    public function addTrial(int $account_id): AccountInsightInterface;
 
     /**
-     * @param int $account_id
+     * @param  int                     $account_id
+     * @return AccountInsightInterface
      */
-    public function addFree(int $account_id);
+    public function addFree(int $account_id): AccountInsightInterface;
 
 //    /**
 //     * @param int                    $account_id

@@ -14,6 +14,7 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\Metric;
 
 use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
 use RuntimeException;
@@ -39,7 +40,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period)
+    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period): AccountInsightInterface
     {
         $mrr = $plan->getMrrValue($billing_period);
 
@@ -53,12 +54,14 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => new DateTimeValue(),
             'mrr_value' => $mrr,
         ]);
+
+        return $this->insight->account($account_id);
     }
 
     /**
-     * @param int $account_id
+     * {@inheritdoc}
      */
-    public function addTrial(int $account_id)
+    public function addTrial(int $account_id): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
@@ -66,12 +69,14 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => new DateTimeValue(),
             'mrr_value' => 0,
         ]);
+
+        return $this->insight->account($account_id);
     }
 
     /**
-     * @param int $account_id
+     * {@inheritdoc}
      */
-    public function addFree(int $account_id)
+    public function addFree(int $account_id): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
@@ -79,5 +84,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => new DateTimeValue(),
             'mrr_value' => 0,
         ]);
+
+        return $this->insight->account($account_id);
     }
 }

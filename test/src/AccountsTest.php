@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Invalid;
@@ -36,6 +37,14 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
+     * Test if new trial returns account insight instance.
+     */
+    public function testNewTrialReturnsAccountInsightInstance()
+    {
+        $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->accounts->addTrial(12345));
+    }
+
+    /**
      * Test if new trial adds a valid record.
      */
     public function testNewTrialAccountAddValidRecord()
@@ -55,6 +64,14 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
+     * Test if new free returns account insight instance.
+     */
+    public function testNewFreeReturnsAccountInsightInstance()
+    {
+        $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->accounts->addFree(12345));
+    }
+
+    /**
      * Test new free accounts adds valid record.
      */
     public function testNewFreeAccountAddValidRecord()
@@ -71,6 +88,14 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
+    }
+
+    /**
+     * Test if new paid returns account insight instance.
+     */
+    public function testNewPaidReturnsAccountInsightInstance()
+    {
+        $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly()));
     }
 
     /**
