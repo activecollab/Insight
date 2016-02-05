@@ -90,6 +90,7 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
      */
     public function newFreeToTrial(int $account_id, DateValue $day = null)
     {
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `conversions_to_trial` = `conversions_to_trial` + 1 WHERE `id` = ?", $this->getDayId($day));
     }
 
     /**
