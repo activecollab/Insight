@@ -149,7 +149,8 @@ class Insight implements InsightInterface
                         `conversions_to_paid` int unsigned NOT NULL DEFAULT '0',
                         `upgrades` int unsigned NOT NULL DEFAULT '0',
                         `downgrades` int unsigned NOT NULL DEFAULT '0',
-                        `cancelations` int unsigned NOT NULL DEFAULT '0',
+                        `free_cancelations` int unsigned NOT NULL DEFAULT '0',
+                        `paid_cancelations` int unsigned NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
                         UNIQUE (`day`)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");

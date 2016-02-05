@@ -115,6 +115,7 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
      */
     public function newTrialToFree(int $account_id, DateValue $day = null)
     {
+        $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `conversions_to_free` = `conversions_to_free` + 1 WHERE `id` = ?", $this->getDayId($day));
     }
 
     /**
@@ -133,8 +134,18 @@ class DailyAccountsHistory extends Metric implements DailyAccountsHistoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function newCancelation(int $account_id, DateValue $day = null)
+    public function newCancelation(int $account_id, float $mrr_lost = 0, DateValue $day = null)
     {
+        if ($mrr_lost < 0) {
+            throw new LogicException('MRR lost value should be 0 or more');
+        }
+
+        if ($mrr_lost > 0) {
+            $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `paid_cancelations` = `paid_cancelations` + 1 WHERE `id` = ?", $this->getDayId($day));
+            $this->recordMrrOnDay($account_id, 0);
+        } else {
+            $this->connection->execute("UPDATE `$this->daily_accounts_history_table` SET `free_cancelations` = `free_cancelations` + 1 WHERE `id` = ?", $this->getDayId($day));
+        }
     }
 
     /**

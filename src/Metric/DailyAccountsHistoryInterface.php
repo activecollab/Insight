@@ -84,9 +84,10 @@ interface DailyAccountsHistoryInterface extends MetricInterface
 
     /**
      * @param int            $account_id
+     * @param float          $mrr_lost
      * @param DateValue|null $day
      */
-    public function newCancelation(int $account_id, DateValue $day = null);
+    public function newCancelation(int $account_id, float $mrr_lost = 0, DateValue $day = null);
 
     /**
      * @param int            $account_id
