@@ -1,0 +1,131 @@
+<?php
+
+/*
+ * This file is part of the Active Collab Insight.
+ *
+ * (c) A51 doo <info@activecollab.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace ActiveCollab\Insight\Test;
+
+use ActiveCollab\Insight\Metric\AccountsInterface;
+use ActiveCollab\Insight\Test\Base\InsightTestCase;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Invalid;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Monthly;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
+use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
+use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
+use ActiveCollab\Insight\Test\Fixtures\Plan\PlanZ;
+
+/**
+ * @package ActiveCollab\Insight\Test
+ */
+class AccountsTest extends InsightTestCase
+{
+    /**
+     * Test if table for accounts is created when requested.
+     */
+    public function testTableIsCreated()
+    {
+        $this->assertFalse($this->connection->tableExists('insight_accounts'));
+        $this->insight->getTableName('accounts');
+        $this->assertTrue($this->connection->tableExists('insight_accounts'));
+    }
+
+    /**
+     * Test if new trial adds a valid record.
+     */
+    public function testNewTrialAccountAddValidRecord()
+    {
+        $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+        $this->insight->accounts->addTrial(12345);
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::TRIAL, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(0, $row['mrr_value']);
+    }
+
+    /**
+     * Test new free accounts adds valid record.
+     */
+    public function testNewFreeAccountAddValidRecord()
+    {
+        $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+        $this->insight->accounts->addFree(12345);
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::FREE, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(0, $row['mrr_value']);
+    }
+
+    /**
+     * Test if adding a yearly paid plan records correct values.
+     */
+    public function testNewPaidYearlyAccountAddValidRecord()
+    {
+        $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::PAID, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(499, $row['mrr_value']);
+    }
+
+    /**
+     * Test if adding a monthly paid plan records correct values.
+     */
+    public function testNewPaidMonthlyAccountAddValidRecord()
+    {
+        $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+        $this->insight->accounts->addPaid(12345, new PlanL(), new Monthly());
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::PAID, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(99, $row['mrr_value']);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Paid accounts should have MRR value
+     */
+    public function testInvalidPlanMrrRaisesAnException()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanZ(), new Monthly());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Value 'this is not valid billing period is not a valid billing period
+     */
+    public function testInvalidBillingPeriodRaisesAnException()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanL(), new Invalid());
+    }
+}

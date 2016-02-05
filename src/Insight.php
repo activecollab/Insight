@@ -140,6 +140,19 @@ class Insight implements InsightInterface
 
         if (!in_array($prefixed_table_name, $this->existing_tables)) {
             switch ($table_name) {
+                case 'accounts':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL,
+                        `status` ENUM('trial', 'free', 'paid') NOT NULL,
+                        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        `canceled_at` DATETIME NULL,
+                        `mrr_value` DECIMAL(13,3) NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        KEY (`status`),
+                        KEY (`created_at`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    break;
                 case 'daily_accounts_history':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -171,7 +184,7 @@ class Insight implements InsightInterface
                         `id` bigint unsigned NOT NULL AUTO_INCREMENT,
                         `account_id` int(10) unsigned NOT NULL DEFAULT '0',
                         `day` DATE NOT NULL,
-                        `mrr_value` DECIMAL(13,3) DEFAULT '0',
+                        `mrr_value` DECIMAL(13,3) NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
                         UNIQUE (`account_id`, `day`),
                         KEY (`day`)
