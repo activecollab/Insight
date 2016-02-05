@@ -22,9 +22,10 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 
 /**
- * @property \ActiveCollab\Insight\Metric\MrrInterface                  $mrr
- * @property \ActiveCollab\Insight\Metric\EventsInterface               $events
+ * @property \ActiveCollab\Insight\Metric\AccountsInterface             $accounts
  * @property \ActiveCollab\Insight\Metric\DailyAccountsHistoryInterface $daily_accounts_history
+ * @property \ActiveCollab\Insight\Metric\EventsInterface               $events
+ * @property \ActiveCollab\Insight\Metric\MrrInterface                  $mrr
  * @package ActiveCollab\Insight
  */
 class Insight implements InsightInterface
