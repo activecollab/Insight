@@ -239,4 +239,27 @@ class AccountsTest extends InsightTestCase
         $this->insight->accounts->cancel(12345);
         $this->assertTrue($this->insight->accounts->isCanceled(12345));
     }
+
+    /**
+     * Test if account cancelation sets its MRR value to zero.
+     */
+    public function testCancelSetsMrrValueToZero()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanL(), new Monthly());
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(99, $row['mrr_value']);
+
+        $this->insight->accounts->cancel(12345);
+
+        $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(0, $row['mrr_value']);
+    }
 }

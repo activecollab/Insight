@@ -133,7 +133,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account cancelation timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `canceled_at` = ? WHERE `id` = ?", $timestamp, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `canceled_at` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, 0, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
