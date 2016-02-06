@@ -13,15 +13,11 @@ declare (strict_types = 1);
 
 namespace ActiveCollab\Insight\AccountInsight\Metric;
 
-use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DatabaseConnection\Record\ValueCaster;
 use ActiveCollab\DatabaseConnection\Record\ValueCasterInterface;
 use ActiveCollab\DatabaseConnection\Result\ResultInterface;
 use ActiveCollab\DateValue\DateTimeValue;
-use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
-use ActiveCollab\Insight\InsightInterface;
 use InvalidArgumentException;
-use Psr\Log\LoggerInterface;
 
 /**
  * @package ActiveCollab\Insight\AccountInsight\Metric
@@ -31,16 +27,14 @@ class Events extends Metric implements EventsInterface
     /**
      * @var string
      */
-    private $table_name;
+    private $events_table;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct(AccountInsightInterface &$account, InsightInterface &$insight, ConnectionInterface &$connection, LoggerInterface &$log)
+    protected function configure()
     {
-        parent::__construct($account, $insight, $connection, $log);
-
-        $this->table_name = $this->insight->getTableName('events');
+        $this->events_table = $this->insight->getTableName('events');
     }
 
     /**
@@ -48,7 +42,7 @@ class Events extends Metric implements EventsInterface
      */
     public function add(string $what, DateTimeValue $when = null, array $context = [])
     {
-        $this->connection->insert($this->table_name, [
+        $this->connection->insert($this->events_table, [
             'account_id' => $this->account->getAccountId(),
             'name' => $what,
             'created_at' => $when ?? new DateTimeValue(),
@@ -71,7 +65,7 @@ class Events extends Metric implements EventsInterface
 
         $offset = ($page - 1) * $per_page;
 
-        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC, id DESC LIMIT {$offset}, $per_page", $this->account->getAccountId()));
+        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->events_table WHERE account_id = ? ORDER BY created_at DESC, id DESC LIMIT {$offset}, $per_page", $this->account->getAccountId()));
     }
 
     /**
@@ -79,7 +73,7 @@ class Events extends Metric implements EventsInterface
      */
     public function all()
     {
-        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->table_name WHERE account_id = ? ORDER BY created_at DESC, id DESC", $this->account->getAccountId()));
+        return $this->castResult($this->connection->execute("SELECT id, name, created_at, context FROM $this->events_table WHERE account_id = ? ORDER BY created_at DESC, id DESC", $this->account->getAccountId()));
     }
 
     /**
@@ -109,6 +103,6 @@ class Events extends Metric implements EventsInterface
      */
     public function count()
     {
-        return $this->connection->count($this->table_name, ['account_id = ?', $this->account->getAccountId()]);
+        return $this->connection->count($this->events_table, ['account_id = ?', $this->account->getAccountId()]);
     }
 }
