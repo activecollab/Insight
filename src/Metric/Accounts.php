@@ -117,11 +117,15 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function cancel(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface
+    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeInterface $timestamp = null): AccountInsightInterface
     {
         if ($row = $this->connection->executeFirstRow("SELECT `id`, `created_at`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
             if (!empty($row['canceled_at'])) {
                 throw new LogicException("Account #{$account_id} is already canceled");
+            }
+
+            if (!in_array($reason, self::CANCELATION_REASONS)) {
+                throw new InvalidArgumentException("Value '$reason' is not a supported cancelation reason");
             }
 
             $timestamp = $timestamp ?? new DateTimeValue();
@@ -133,7 +137,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account cancelation timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `canceled_at` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, 0, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, $reason, 0, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }

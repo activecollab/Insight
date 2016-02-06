@@ -211,13 +211,23 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Value 'something not supported' is not a supported cancelation reason
+     */
+    public function testCancelErrorsWhenReasonIsNotSupported()
+    {
+        $this->insight->accounts->addTrial(12345);
+        $this->insight->accounts->cancel(12345, 'something not supported');
+    }
+
+    /**
      * @expectedException \LogicException
      * @expectedExceptionMessage Account cancelation timestamp can't be before creation timestamp
      */
     public function testCancelErrorsWhenCancelationTimestampIsBeforeCreationTimestamp()
     {
         $this->insight->accounts->addTrial(12345, new DateTimeValue('2016-01-01 12:00:00'));
-        $this->insight->accounts->cancel(12345, new DateTimeValue('2015-01-01 12:00:00'));
+        $this->insight->accounts->cancel(12345, AccountsInterface::USER_CANCELED, new DateTimeValue('2015-01-01 12:00:00'));
     }
 
     /**
@@ -238,6 +248,28 @@ class AccountsTest extends InsightTestCase
         $this->assertFalse($this->insight->accounts->isCanceled(12345));
         $this->insight->accounts->cancel(12345);
         $this->assertTrue($this->insight->accounts->isCanceled(12345));
+    }
+
+    /**
+     * Confirm that default cancelation reason is "user canceled".
+     */
+    public function testDefaultCancelationReasonIsUserCanceled()
+    {
+        $this->insight->accounts->addTrial(12345);
+        $this->insight->accounts->cancel(12345);
+
+        $this->assertEquals(AccountsInterface::USER_CANCELED, $this->connection->executeFirstCell("SELECT `cancelation_reason` FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345));
+    }
+
+    /**
+     * Test that cancelation reason can be changed when cancelation is recorded.
+     */
+    public function testCancelationReasonCanBeSpecified()
+    {
+        $this->insight->accounts->addTrial(12345);
+        $this->insight->accounts->cancel(12345, AccountsInterface::TERMINATED);
+
+        $this->assertEquals(AccountsInterface::TERMINATED, $this->connection->executeFirstCell("SELECT `cancelation_reason` FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345));
     }
 
     /**

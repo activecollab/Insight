@@ -15,6 +15,7 @@ namespace ActiveCollab\Insight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
+use ActiveCollab\Insight\Metric\Accounts;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Doctrine\Common\Inflector\Inflector;
 use InvalidArgumentException;
@@ -148,11 +149,12 @@ class Insight implements InsightInterface
                         `cohort_month` TINYINT unsigned NOT NULL,
                         `cohort_year` SMALLINT unsigned NOT NULL,
                         `canceled_at` DATETIME NULL,
+                        `cancelation_reason` ENUM ?,
                         `mrr_value` DECIMAL(13,3) NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
                         KEY (`status`),
                         KEY (`created_at`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
 
                     $this->connection->execute('DROP TRIGGER IF EXISTS `account_cohort`');
                     $this->connection->execute("CREATE TRIGGER `account_cohort` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW

@@ -29,6 +29,13 @@ interface AccountsInterface
 
     const STATUSES = [self::TRIAL, self::FREE, self::PAID];
 
+    const TRIAL_EXPIRED = 'trial_expired';   // Trial expired and user never returned to convert.
+    const USER_ABANDONED = 'user_abandoned'; // Payment failed, but user never returned to correct the billing info.
+    const USER_CANCELED = 'user_canceled';   // User explicitely requested account cancelation.
+    const TERMINATED = 'terminated';         // Staff terminated the account.
+
+    const CANCELATION_REASONS = [self::TRIAL_EXPIRED, self::USER_ABANDONED, self::USER_CANCELED, self::TERMINATED];
+
     /**
      * Return true if given account exists.
      *
@@ -93,8 +100,9 @@ interface AccountsInterface
      * Mark an account as canceled.
      *
      * @param  int                     $account_id
+     * @param  string                  $reason
      * @param  DateTimeInterface|null  $timestamp
      * @return AccountInsightInterface
      */
-    public function cancel(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface;
+    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeInterface $timestamp = null): AccountInsightInterface;
 }
