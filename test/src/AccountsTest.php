@@ -11,6 +11,7 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\Metric\AccountsInterface;
@@ -179,5 +180,63 @@ class AccountsTest extends InsightTestCase
     public function testInvalidBillingPeriodRaisesAnException()
     {
         $this->insight->accounts->addPaid(12345, new PlanL(), new Invalid());
+    }
+
+    public function testExists()
+    {
+        $this->assertFalse($this->insight->accounts->exists(12345));
+        $this->insight->accounts->addTrial(12345);
+        $this->assertTrue($this->insight->accounts->exists(12345));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Account #12345 does not exist
+     */
+    public function testCancelErrorsWhenAccountIsNotFound()
+    {
+        $this->assertFalse($this->insight->accounts->exists(12345));
+        $this->insight->accounts->cancel(12345);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Account #12345 is already canceled
+     */
+    public function testCancelErrorsWhenAccountIsAlreadyCanceled()
+    {
+        $this->insight->accounts->addTrial(12345);
+        $this->insight->accounts->cancel(12345);
+        $this->insight->accounts->cancel(12345);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Account cancelation timestamp can't be before creation timestamp
+     */
+    public function testCancelErrorsWhenCancelationTimestampIsBeforeCreationTimestamp()
+    {
+        $this->insight->accounts->addTrial(12345, new DateTimeValue('2016-01-01 12:00:00'));
+        $this->insight->accounts->cancel(12345, new DateTimeValue('2015-01-01 12:00:00'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Account #12345 does not exist
+     */
+    public function testIsCanceledErrorsWhenAccountDoesNotExist()
+    {
+        $this->insight->accounts->isCanceled(12345);
+    }
+
+    /**
+     * Test account cancel call.
+     */
+    public function testCancel()
+    {
+        $this->insight->accounts->addTrial(12345);
+        $this->assertFalse($this->insight->accounts->isCanceled(12345));
+        $this->insight->accounts->cancel(12345);
+        $this->assertTrue($this->insight->accounts->isCanceled(12345));
     }
 }

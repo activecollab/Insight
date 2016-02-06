@@ -30,6 +30,14 @@ interface AccountsInterface
     const STATUSES = [self::TRIAL, self::FREE, self::PAID];
 
     /**
+     * Return true if given account exists.
+     *
+     * @param  int  $account_id
+     * @return bool
+     */
+    public function exists(int $account_id): bool;
+
+    /**
      * Add a new paid account to the.
      *
      * @param  int                     $account_id
@@ -72,4 +80,21 @@ interface AccountsInterface
 //     * @param int $account_id
 //     */
 //    public function downgradeToFree(int $account_id);
+
+    /**
+     * Return true if account exists and it is canceled.
+     *
+     * @param  int  $account_id
+     * @return bool
+     */
+    public function isCanceled(int $account_id): bool;
+
+    /**
+     * Mark an account as canceled.
+     *
+     * @param  int                     $account_id
+     * @param  DateTimeInterface|null  $timestamp
+     * @return AccountInsightInterface
+     */
+    public function cancel(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface;
 }
