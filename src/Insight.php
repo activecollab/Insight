@@ -24,6 +24,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @property \ActiveCollab\Insight\Metric\AccountsInterface             $accounts
+ * @property \ActiveCollab\Insight\Metric\ConversionRatesInterface      $conversion_rates
  * @property \ActiveCollab\Insight\Metric\DailyAccountsHistoryInterface $daily_accounts_history
  * @property \ActiveCollab\Insight\Metric\EventsInterface               $events
  * @property \ActiveCollab\Insight\Metric\MrrInterface                  $mrr
@@ -141,6 +142,38 @@ class Insight implements InsightInterface
 
         if (!in_array($prefixed_table_name, $this->existing_tables)) {
             switch ($table_name) {
+                case 'daily_conversions':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `day` date NOT NULL,
+                        `visits` int unsigned NOT NULL DEFAULT '0',
+                        `trials` int unsigned NOT NULL DEFAULT '0',
+                        `conversions` int unsigned NOT NULL DEFAULT '0',
+                        `to_trial_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        `to_paid_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
+
+                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
+
+                    break;
+                case 'monthly_conversions':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `day` date NOT NULL COMMENT 'First day of the month!',
+                        `visits` int unsigned NOT NULL DEFAULT '0',
+                        `trials` int unsigned NOT NULL DEFAULT '0',
+                        `conversions` int unsigned NOT NULL DEFAULT '0',
+                        `to_trial_rate` DECIMAL(6,3),
+                        `to_paid_rate` DECIMAL(6,3),
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
+
+                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
+
+                    break;
                 case 'accounts':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL,
@@ -233,5 +266,54 @@ class Insight implements InsightInterface
         }
 
         return $prefixed_table_name;
+    }
+
+    /**
+     * @param string $table_name
+     * @param string $prefixed_table_name
+     */
+    private function createConversionRateTriggers(string $table_name, string $prefixed_table_name)
+    {
+        if ($table_name == 'daily_conversions') {
+            $insert_trigger = 'daily_trial_conversion_rate_on_insert';
+            $update_trigger = 'daily_trial_conversion_rate_on_update';
+        } else {
+            $insert_trigger = 'monthly_trial_conversion_rate_on_insert';
+            $update_trigger = 'monthly_trial_conversion_rate_on_update';
+        }
+
+        $this->connection->execute("DROP TRIGGER IF EXISTS `$insert_trigger`");
+        $this->connection->execute("CREATE TRIGGER `$insert_trigger` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
+            BEGIN
+                IF NEW.visits > '0' AND NEW.trials > '0' THEN
+                    SET NEW.to_trial_rate = NEW.trials / NEW.visits * 100;
+                ELSE
+                    SET NEW.to_trial_rate = '0';
+                END IF;
+
+                IF NEW.visits > '0' AND NEW.conversions > '0' THEN
+                    SET NEW.to_paid_rate = NEW.conversions / NEW.visits * 100;
+                ELSE
+                    SET NEW.to_paid_rate = '0';
+                END IF;
+            END");
+
+        $this->connection->execute("DROP TRIGGER IF EXISTS `$update_trigger`");
+        $this->connection->execute("CREATE TRIGGER `$update_trigger` BEFORE UPDATE ON `$prefixed_table_name` FOR EACH ROW
+            BEGIN
+                IF NEW.visits != OLD.visits OR NEW.trials != OLD.trials OR NEW.conversions != OLD.conversions THEN
+                    IF NEW.visits > '0' AND NEW.trials > '0' THEN
+                        SET NEW.to_trial_rate = NEW.trials / NEW.visits * 100;
+                    ELSE
+                        SET NEW.to_trial_rate = '0';
+                    END IF;
+
+                    IF NEW.visits > '0' AND NEW.conversions > '0' THEN
+                        SET NEW.to_paid_rate = NEW.conversions / NEW.visits * 100;
+                    ELSE
+                        SET NEW.to_paid_rate = '0';
+                    END IF;
+                END IF;
+            END");
     }
 }
