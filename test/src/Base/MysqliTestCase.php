@@ -50,9 +50,11 @@ abstract class MysqliTestCase extends TestCase
      */
     public function tearDown()
     {
+        $this->connection->execute('SET FOREIGN_KEY_CHECKS = 0');
         foreach ($this->connection->getTableNames() as $table_name) {
             $this->connection->dropTable($table_name);
         }
+        $this->connection->execute('SET FOREIGN_KEY_CHECKS = 1');
 
         $this->connection->disconnect();
 

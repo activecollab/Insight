@@ -142,38 +142,6 @@ class Insight implements InsightInterface
 
         if (!in_array($prefixed_table_name, $this->existing_tables)) {
             switch ($table_name) {
-                case 'daily_conversions':
-                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
-                        `id` int unsigned NOT NULL AUTO_INCREMENT,
-                        `day` date NOT NULL,
-                        `visits` int unsigned NOT NULL DEFAULT '0',
-                        `trials` int unsigned NOT NULL DEFAULT '0',
-                        `conversions` int unsigned NOT NULL DEFAULT '0',
-                        `to_trial_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
-                        `to_paid_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
-                        PRIMARY KEY (`id`),
-                        UNIQUE (`day`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
-
-                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
-
-                    break;
-                case 'monthly_conversions':
-                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
-                        `id` int unsigned NOT NULL AUTO_INCREMENT,
-                        `day` date NOT NULL COMMENT 'First day of the month!',
-                        `visits` int unsigned NOT NULL DEFAULT '0',
-                        `trials` int unsigned NOT NULL DEFAULT '0',
-                        `conversions` int unsigned NOT NULL DEFAULT '0',
-                        `to_trial_rate` DECIMAL(6,3),
-                        `to_paid_rate` DECIMAL(6,3),
-                        PRIMARY KEY (`id`),
-                        UNIQUE (`day`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
-
-                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
-
-                    break;
                 case 'accounts':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL,
@@ -195,6 +163,75 @@ class Insight implements InsightInterface
                             SET NEW.cohort_month = MONTH(NEW.created_at);
                             SET NEW.cohort_year = YEAR(NEW.created_at);
                         END");
+
+                    break;
+                case 'monthly_churn':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `day` date NOT NULL,
+                        `accounts` int unsigned NOT NULL DEFAULT '0',
+                        `mrr` int unsigned NOT NULL DEFAULT '0',
+                        `accounts_lost` int unsigned NOT NULL DEFAULT '0',
+                        `mrr_lost` int unsigned NOT NULL DEFAULT '0',
+                        `accounts_churn_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        `mrr_churn_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    break;
+                case 'churned_accounts':
+                    $monthly_churn_table = $this->getTableName('monthly_churn');
+                    $account_table = $this->getTableName('accounts');
+
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `snapshot_id` int unsigned NOT NULL DEFAULT '0',
+                        `account_id` int unsigned NOT NULL DEFAULT '0',
+                        `churned_on` date NOT NULL,
+                        `mrr_lost` int unsigned NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`snapshot_id`, `account_id`),
+                        KEY (`account_id`),
+                        FOREIGN KEY (`snapshot_id`)
+                            REFERENCES `$monthly_churn_table` (`id`)
+                            ON DELETE RESTRICT,
+                        FOREIGN KEY (`account_id`)
+                            REFERENCES `$account_table` (`id`)
+                            ON DELETE RESTRICT
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    break;
+                case 'daily_conversions':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `day` date NOT NULL,
+                        `visits` int unsigned NOT NULL DEFAULT '0',
+                        `trials` int unsigned NOT NULL DEFAULT '0',
+                        `conversions` int unsigned NOT NULL DEFAULT '0',
+                        `to_trial_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        `to_paid_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
+
+                    break;
+                case 'monthly_conversions':
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `day` date NOT NULL COMMENT 'First day of the month!',
+                        `visits` int unsigned NOT NULL DEFAULT '0',
+                        `trials` int unsigned NOT NULL DEFAULT '0',
+                        `conversions` int unsigned NOT NULL DEFAULT '0',
+                        `to_trial_rate` DECIMAL(6,3),
+                        `to_paid_rate` DECIMAL(6,3),
+                        PRIMARY KEY (`id`),
+                        UNIQUE (`day`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    $this->createConversionRateTriggers($table_name, $prefixed_table_name);
 
                     break;
                 case 'daily_accounts_history':
