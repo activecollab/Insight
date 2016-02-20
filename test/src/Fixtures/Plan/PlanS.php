@@ -12,13 +12,12 @@
 namespace ActiveCollab\Insight\Test\Fixtures\Plan;
 
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
-use ActiveCollab\Insight\Plan\PlanInterface;
 use RuntimeException;
 
 /**
  * @package ActiveCollab\Insight\Test\Fixtures\Plan
  */
-class PlanS implements PlanInterface
+class PlanS extends PaidPlan
 {
     /**
      * {@inheritdoc}

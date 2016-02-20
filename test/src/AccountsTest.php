@@ -73,7 +73,7 @@ class AccountsTest extends InsightTestCase
      */
     public function testNewFreeReturnsAccountInsightInstance()
     {
-        $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->accounts->addFree(12345));
+        $this->assertInstanceOf(AccountInsightInterface::class, $this->insight->accounts->addFree(12345, new FreePlan()));
     }
 
     /**
@@ -82,7 +82,7 @@ class AccountsTest extends InsightTestCase
     public function testNewFreeAccountAddValidRecord()
     {
         $this->assertEquals(0, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
-        $this->insight->accounts->addFree(12345);
+        $this->insight->accounts->addFree(12345, new FreePlan());
         $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
 
         $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
@@ -203,20 +203,20 @@ class AccountsTest extends InsightTestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage Paid accounts should have MRR value
+     * @expectedExceptionMessage Paid accounts can use only paid plans
      */
-    public function testInvalidPlanMrrRaisesAnException()
+    public function testAddPaidRequiresPaidPlan()
     {
-        $this->insight->accounts->addPaid(12345, new PlanZ(), new Monthly());
+        $this->insight->accounts->addPaid(12345, new FreePlan(), new None());
     }
 
     /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Paid accounts should have MRR value
      */
-    public function testAddPaidRequiresPaidPlan()
+    public function testInvalidPlanMrrRaisesAnException()
     {
-        $this->insight->accounts->addPaid(12345, new FreePlan(), new None());
+        $this->insight->accounts->addPaid(12345, new PlanZ(), new Monthly());
     }
 
     /**

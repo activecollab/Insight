@@ -21,6 +21,13 @@ use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 interface PlanInterface
 {
     /**
+     * Return true if this account is free.
+     *
+     * @return bool
+     */
+    public function isFree(): bool;
+
+    /**
      * Return MRR for the given billing period.
      *
      * @param  BillingPeriodInterface $billing_period

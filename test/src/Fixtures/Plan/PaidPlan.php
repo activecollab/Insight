@@ -11,18 +11,18 @@
 
 namespace ActiveCollab\Insight\Test\Fixtures\Plan;
 
-use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
+use ActiveCollab\Insight\Plan\PlanInterface;
 
 /**
  * @package ActiveCollab\Insight\Test\Fixtures\Plan
  */
-class PlanZ extends PaidPlan
+abstract class PaidPlan implements PlanInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function getMrrValue(BillingPeriodInterface $billing_period): float
+    public function isFree(): bool
     {
-        return -12;
+        return false;
     }
 }

@@ -57,6 +57,10 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null, DateTimeValueInterface $conversion_timestamp = null): AccountInsightInterface
     {
+        if ($plan->isFree()) {
+            throw new RuntimeException('Paid accounts can use only paid plans');
+        }
+
         $mrr = $plan->getMrrValue($billing_period);
 
         if ($mrr <= 0) {
@@ -101,7 +105,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addFree(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface
+    public function addFree(int $account_id, PlanInterface $plan, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,

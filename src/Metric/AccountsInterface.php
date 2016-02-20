@@ -66,10 +66,11 @@ interface AccountsInterface
 
     /**
      * @param  int                         $account_id
+     * @param  PlanInterface               $plan
      * @param  DateTimeValueInterface|null $timestamp
      * @return AccountInsightInterface
      */
-    public function addFree(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+    public function addFree(int $account_id, PlanInterface $plan, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
 
     /**
      * Change account's plan.

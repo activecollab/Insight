@@ -14,6 +14,7 @@ namespace ActiveCollab\Insight\Test;
 use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
+use ActiveCollab\Insight\Test\Fixtures\Plan\FreePlan;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
 
 /**
@@ -88,7 +89,7 @@ class ChurnTest extends InsightTestCase
     {
         $this->insight->churn->snapshot(new DateValue('2016-02-02'), 100, 10000);
 
-        $this->insight->accounts->addFree(1);
+        $this->insight->accounts->addFree(1, new FreePlan());
         $this->insight->churn->churn(1, new DateValue('2016-02-02'));
     }
 
