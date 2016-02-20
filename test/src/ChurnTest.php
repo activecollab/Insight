@@ -11,7 +11,10 @@
 
 namespace ActiveCollab\Insight\Test;
 
+use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
+use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
 
 /**
  * @package ActiveCollab\Insight\Test
@@ -35,4 +38,78 @@ class ChurnTest extends InsightTestCase
         $this->assertContains('insight_monthly_churn', $table_names);
         $this->assertContains('insight_accounts', $table_names);
     }
+
+    public function testCreateSnapshot()
+    {
+        $this->insight->churn->snapshot(new DateValue('2016-02-22'), 100, 10000);
+
+        $this->assertEquals(0, $this->connection->count($this->insight->getTableName('monthly_churn'), ['`day` = ?', new DateValue('2016-02-22')]));
+        $this->assertEquals(1, $this->connection->count($this->insight->getTableName('monthly_churn'), ['`day` = ?', new DateValue('2016-02-01')]));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Snapshot for 2016-02 already exists
+     */
+    public function testErrorWhenSnapshotIsCreatedForExistingMonth()
+    {
+        $this->insight->churn->snapshot(new DateValue('2016-02-02'), 100, 10000);
+        $this->insight->churn->snapshot(new DateValue('2016-02-22'), 100, 10000);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Account #1234 does not exist
+     */
+    public function testErrorWhenChurningAccountThatDoesNotExist()
+    {
+        $this->insight->churn->snapshot(new DateValue('2016-02-02'), 100, 10000);
+
+        $this->insight->churn->churn(1234, new DateValue('2016-02-02'));
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Only paid accounts can churn
+     */
+    public function testTrialsCantChurn()
+    {
+        $this->insight->churn->snapshot(new DateValue('2016-02-02'), 100, 10000);
+
+        $this->insight->accounts->addTrial(1);
+        $this->insight->churn->churn(1, new DateValue('2016-02-02'));
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Only paid accounts can churn
+     */
+    public function testFreeCantChurn()
+    {
+        $this->insight->churn->snapshot(new DateValue('2016-02-02'), 100, 10000);
+
+        $this->insight->accounts->addFree(1);
+        $this->insight->churn->churn(1, new DateValue('2016-02-02'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Churn snapshot for 2016-02 was not found
+     */
+    public function testChurnSnapshotNotFound()
+    {
+        $this->insight->accounts->addPaid(1, new PlanM(), new Yearly());
+        $this->insight->churn->churn(1, new DateValue('2016-02-12'));
+    }
+
+//    /**
+//     * Test successful churn.
+//     */
+//    public function testChurn()
+//    {
+//        $this->insight->accounts->addPaid(1, new PlanM(), new Yearly(), new DateValue('2014-12-31'));
+//
+//        $this->insight->churn->snapshot(new DateValue('2016-02-01'));
+//        $this->insight->churn->churn(1, new DateValue('2016-02-12'));
+//    }
 }

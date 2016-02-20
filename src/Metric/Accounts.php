@@ -14,13 +14,14 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\Metric;
 
 use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
-use DateTimeInterface;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
+use ActiveCollab\DateValue\DateTimeValueInterface;
 
 /**
  * @package ActiveCollab\Insight\Metric
@@ -54,7 +55,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeInterface $timestamp = null): AccountInsightInterface
+    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null, DateTimeValueInterface $conversion_timestamp = null): AccountInsightInterface
     {
         $mrr = $plan->getMrrValue($billing_period);
 
@@ -62,10 +63,18 @@ class Accounts extends Metric implements AccountsInterface
             throw new RuntimeException('Paid accounts should have MRR value');
         }
 
+        $created_at = $timestamp ?? new DateTimeValue();
+        $converted_at = $conversion_timestamp ?? $created_at;
+
+        if ($created_at->getTimestamp() > $converted_at->getTimestamp()) {
+            throw new LogicException("Account can't convert before it is created");
+        }
+
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::PAID,
-            'created_at' => $timestamp ?? new DateTimeValue(),
+            'created_at' => $created_at,
+            'converted_at' => $converted_at,
             'mrr_value' => $mrr,
         ]);
 
@@ -75,7 +84,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addTrial(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface
+    public function addTrial(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
@@ -90,7 +99,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addFree(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface
+    public function addFree(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
@@ -99,6 +108,14 @@ class Accounts extends Metric implements AccountsInterface
             'mrr_value' => 0,
         ]);
 
+        return $this->insight->account($account_id);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp): AccountInsightInterface
+    {
         return $this->insight->account($account_id);
     }
 
@@ -117,7 +134,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeInterface $timestamp = null): AccountInsightInterface
+    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
         if ($row = $this->connection->executeFirstRow("SELECT `id`, `created_at`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
             if (!empty($row['canceled_at'])) {
@@ -143,5 +160,13 @@ class Accounts extends Metric implements AccountsInterface
         }
 
         return $this->insight->account($account_id);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function countPayingOnDay(DateValueInterface $day): int
+    {
+        return $this->connection->count($this->insight->getTableName('prefix'), ['DATE(`converted_at`) >= ? AND (`canceled_at` IS NULL OR DATE(`canceled_at`) <= ?)', $day, $day]);
     }
 }

@@ -13,10 +13,11 @@ declare (strict_types = 1);
 
 namespace ActiveCollab\Insight\Metric;
 
+use ActiveCollab\DateValue\DateTimeValueInterface;
+use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
-use DateTimeInterface;
 
 /**
  * @package ActiveCollab\Insight\Metric
@@ -47,35 +48,38 @@ interface AccountsInterface
     /**
      * Add a new paid account to the.
      *
+     * @param  int                         $account_id
+     * @param  PlanInterface               $plan
+     * @param  BillingPeriodInterface      $billing_period
+     * @param  DateTimeValueInterface|null $timestamp
+     * @param  DateTimeValueInterface|null $conversion_timestamp
+     * @return AccountInsightInterface
+     */
+    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null, DateTimeValueInterface $conversion_timestamp = null): AccountInsightInterface;
+
+    /**
+     * @param  int                         $account_id
+     * @param  DateTimeValueInterface|null $timestamp
+     * @return AccountInsightInterface
+     */
+    public function addTrial(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+
+    /**
+     * @param  int                         $account_id
+     * @param  DateTimeValueInterface|null $timestamp
+     * @return AccountInsightInterface
+     */
+    public function addFree(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+
+    /**
      * @param  int                     $account_id
      * @param  PlanInterface           $plan
      * @param  BillingPeriodInterface  $billing_period
-     * @param  DateTimeInterface|null  $timestamp
+     * @param  DateTimeValueInterface  $timestamp
      * @return AccountInsightInterface
      */
-    public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeInterface $timestamp = null): AccountInsightInterface;
+    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp): AccountInsightInterface;
 
-    /**
-     * @param  int                     $account_id
-     * @param  DateTimeInterface|null  $timestamp
-     * @return AccountInsightInterface
-     */
-    public function addTrial(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface;
-
-    /**
-     * @param  int                     $account_id
-     * @param  DateTimeInterface|null  $timestamp
-     * @return AccountInsightInterface
-     */
-    public function addFree(int $account_id, DateTimeInterface $timestamp = null): AccountInsightInterface;
-
-//    /**
-//     * @param int                    $account_id
-//     * @param PlanInterface          $plan
-//     * @param BillingPeriodInterface $billing_period
-//     */
-//    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period);
-//
 //    /**
 //     * @param int                    $account_id
 //     * @param PlanInterface          $plan
@@ -99,10 +103,18 @@ interface AccountsInterface
     /**
      * Mark an account as canceled.
      *
-     * @param  int                     $account_id
-     * @param  string                  $reason
-     * @param  DateTimeInterface|null  $timestamp
+     * @param  int                         $account_id
+     * @param  string                      $reason
+     * @param  DateTimeValueInterface|null $timestamp
      * @return AccountInsightInterface
      */
-    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeInterface $timestamp = null): AccountInsightInterface;
+    public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+
+    /**
+     * Return number of active, paying accounts on a given day.
+     *
+     * @param  DateValueInterface $day
+     * @return int
+     */
+    public function countPayingOnDay(DateValueInterface $day): int;
 }

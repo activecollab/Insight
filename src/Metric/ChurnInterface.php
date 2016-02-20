@@ -19,12 +19,22 @@ use ActiveCollab\DateValue\DateValueInterface;
 interface ChurnInterface extends MetricInterface
 {
     /**
-     * Create a reference snapshot,
+     * Create a reference snapshot,.
      *
      * @param  DateValueInterface $reference_day
-     * @param  int                $number_of_paid_accounts
-     * @param  int                $current_mrr
+     * @param  int|null           $number_of_paid_accounts
+     * @param  float|null         $mrr
      * @return ChurnInterface
      */
-    public function &snapshot(DateValueInterface $reference_day, int $number_of_paid_accounts, int $current_mrr): ChurnInterface;
+    public function &snapshot(DateValueInterface $reference_day, int $number_of_paid_accounts = null, float $mrr = null): ChurnInterface;
+
+    /**
+     * Churn an account.
+     *
+     * @param  int                $account_id
+     * @param  DateValueInterface $churned_on
+     * @param  string             $reason
+     * @return ChurnInterface
+     */
+    public function &churn(int $account_id, DateValueInterface $churned_on, $reason = AccountsInterface::USER_CANCELED): ChurnInterface;
 }

@@ -109,26 +109,7 @@ class AccountsTest extends InsightTestCase
      */
     public function testNewPaidAccountCanHaveCustomTimestamp()
     {
-        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
-
-        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
-
-        $this->assertInternalType('array', $row);
-        $this->assertEquals(12345, $row['id']);
-        $this->assertEquals(AccountsInterface::PAID, $row['status']);
-        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']->format('Y-m-d H:i:s'));
-        $this->assertEquals(date('Y'), $row['cohort_year']);
-        $this->assertEquals(date('m'), $row['cohort_month']);
-        $this->assertNull($row['canceled_at']);
-        $this->assertEquals(499, $row['mrr_value']);
-    }
-
-    /**
-     * Test if adding a yearly paid plan records correct values.
-     */
-    public function testNewPaidYearlyAccountAddValidRecord()
-    {
-        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly(), new DateValue('2015-12-05'));
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly(), new DateTimeValue('2015-12-05'));
         $this->assertEquals(1, $this->connection->executeFirstCell("SELECT COUNT(`id`) AS 'row_count' FROM {$this->insight->getTableName('accounts')}"));
 
         $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
@@ -139,6 +120,25 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals('2015-12-05 00:00:00', $row['created_at']->format('Y-m-d H:i:s'));
         $this->assertEquals(2015, $row['cohort_year']);
         $this->assertEquals(12, $row['cohort_month']);
+        $this->assertNull($row['canceled_at']);
+        $this->assertEquals(499, $row['mrr_value']);
+    }
+
+    /**
+     * Test if adding a yearly paid plan records correct values.
+     */
+    public function testNewPaidYearlyAccountAddValidRecord()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(AccountsInterface::PAID, $row['status']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals(date('Y'), $row['cohort_year']);
+        $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(499, $row['mrr_value']);
     }
@@ -162,6 +162,38 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(99, $row['mrr_value']);
+    }
+
+    /**
+     * Test if new paid account with no conversion timestamp specified users created at timestamp
+     */
+    public function testNewPaidSetsConversionToCreationTimestampWhenOmitted()
+    {
+        $this->insight->accounts->addPaid(12345, new PlanM(), new Yearly());
+        $this->insight->accounts->addPaid(12346, new PlanM(), new Yearly(), new DateTimeValue('2015-12-05'));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['converted_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals($row['created_at'], $row['converted_at']);
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12346);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12346, $row['id']);
+        $this->assertEquals('2015-12-05 00:00:00', $row['converted_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals($row['created_at'], $row['converted_at']);
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Account can't convert before it is created
+     */
+    public function testErrorWhenConversionTimestampIsBeforeCreationTimestamp()
+    {
+        $this->insight->accounts->addPaid(12346, new PlanM(), new Yearly(), new DateTimeValue('2015-12-05'), new DateTimeValue('2014-12-05'));
     }
 
     /**
@@ -293,5 +325,15 @@ class AccountsTest extends InsightTestCase
 
         $this->assertInternalType('array', $row);
         $this->assertEquals(0, $row['mrr_value']);
+    }
+
+    public function testCountPayingOnDay()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-01-22')); // Monhtly, churns soon
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-01-22')); // Monthly, loyal
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-01-22')); // Yearly, churns, but remains active
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-01-22')); // Never converts
+
+        $this->insight->accounts->upgradeToPlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
     }
 }

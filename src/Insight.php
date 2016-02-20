@@ -24,6 +24,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @property \ActiveCollab\Insight\Metric\AccountsInterface             $accounts
+ * @property \ActiveCollab\Insight\Metric\ChurnInterface                $churn
  * @property \ActiveCollab\Insight\Metric\ConversionRatesInterface      $conversion_rates
  * @property \ActiveCollab\Insight\Metric\DailyAccountsHistoryInterface $daily_accounts_history
  * @property \ActiveCollab\Insight\Metric\EventsInterface               $events
@@ -149,9 +150,10 @@ class Insight implements InsightInterface
                         `created_at` DATETIME NOT NULL,
                         `cohort_month` TINYINT unsigned NOT NULL,
                         `cohort_year` SMALLINT unsigned NOT NULL,
+                        `converted_at` DATETIME NULL,
                         `canceled_at` DATETIME NULL,
                         `cancelation_reason` ENUM ?,
-                        `mrr_value` DECIMAL(13,3) NOT NULL DEFAULT '0',
+                        `mrr_value` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
                         KEY (`status`),
                         KEY (`created_at`)
@@ -170,9 +172,9 @@ class Insight implements InsightInterface
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `day` date NOT NULL,
                         `accounts` int unsigned NOT NULL DEFAULT '0',
-                        `mrr` int unsigned NOT NULL DEFAULT '0',
+                        `mrr` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
                         `accounts_lost` int unsigned NOT NULL DEFAULT '0',
-                        `mrr_lost` int unsigned NOT NULL DEFAULT '0',
+                        `mrr_lost` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
                         `accounts_churn_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
                         `mrr_churn_rate` DECIMAL(6,3) NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
@@ -189,16 +191,16 @@ class Insight implements InsightInterface
                         `snapshot_id` int unsigned NOT NULL DEFAULT '0',
                         `account_id` int unsigned NOT NULL DEFAULT '0',
                         `churned_on` date NOT NULL,
-                        `mrr_lost` int unsigned NOT NULL DEFAULT '0',
+                        `mrr_lost` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
                         UNIQUE (`snapshot_id`, `account_id`),
                         KEY (`account_id`),
                         FOREIGN KEY (`snapshot_id`)
                             REFERENCES `$monthly_churn_table` (`id`)
-                            ON DELETE RESTRICT,
+                            ON UPDATE CASCADE ON DELETE RESTRICT,
                         FOREIGN KEY (`account_id`)
                             REFERENCES `$account_table` (`id`)
-                            ON DELETE RESTRICT
+                            ON UPDATE CASCADE ON DELETE RESTRICT
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
                     break;
