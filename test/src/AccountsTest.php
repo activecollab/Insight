@@ -61,6 +61,8 @@ class AccountsTest extends InsightTestCase
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::TRIAL, $row['status']);
+        $this->assertNull($row['plan']);
+        $this->assertNull($row['billing_period']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
         $this->assertEquals(date('Y'), $row['cohort_year']);
         $this->assertEquals(date('m'), $row['cohort_month']);
@@ -77,6 +79,15 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Free accounts can use only free plans
+     */
+    public function testAddFreeRequiresFreeAccount()
+    {
+        $this->insight->accounts->addFree(12345, new PlanL());
+    }
+
+    /**
      * Test new free accounts adds valid record.
      */
     public function testNewFreeAccountAddValidRecord()
@@ -90,6 +101,8 @@ class AccountsTest extends InsightTestCase
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::FREE, $row['status']);
+        $this->assertEquals(FreePlan::class, $row['plan']);
+        $this->assertNull($row['billing_period']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
         $this->assertEquals(date('Y'), $row['cohort_year']);
         $this->assertEquals(date('m'), $row['cohort_month']);
@@ -202,7 +215,7 @@ class AccountsTest extends InsightTestCase
     }
 
     /**
-     * @expectedException \RuntimeException
+     * @expectedException \LogicException
      * @expectedExceptionMessage Paid accounts can use only paid plans
      */
     public function testAddPaidRequiresPaidPlan()
@@ -238,13 +251,13 @@ class AccountsTest extends InsightTestCase
         $this->assertTrue($this->insight->accounts->exists(12345));
     }
 
-    public function testCountPayingOnDay()
-    {
-        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-01-22')); // Monhtly, churns soon
-        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-01-22')); // Monthly, loyal
-        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-01-22')); // Yearly, churns, but remains active
-        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-01-22')); // Never converts
-
-        $this->insight->accounts->changePlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
-    }
+//    public function testCountPayingOnDay()
+//    {
+//        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-01-22')); // Monhtly, churns soon
+//        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-01-22')); // Monthly, loyal
+//        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-01-22')); // Yearly, churns, but remains active
+//        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-01-22')); // Never converts
+//
+//        $this->insight->accounts->changePlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
+//    }
 }

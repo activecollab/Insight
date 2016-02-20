@@ -147,8 +147,8 @@ class Insight implements InsightInterface
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL,
                         `status` ENUM('trial', 'free', 'paid') NOT NULL,
-                        `plan` varchar(191) NOT NULL DEFAULT '',
-                        `billing_period` varchar(191) NOT NULL DEFAULT '',
+                        `plan` varchar(191) DEFAULT NULL,
+                        `billing_period` varchar(191) DEFAULT NULL,
                         `created_at` DATETIME NOT NULL,
                         `cohort_month` TINYINT unsigned NOT NULL,
                         `cohort_year` SMALLINT unsigned NOT NULL,

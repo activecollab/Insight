@@ -18,6 +18,7 @@ use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
@@ -58,7 +59,7 @@ class Accounts extends Metric implements AccountsInterface
     public function addPaid(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null, DateTimeValueInterface $conversion_timestamp = null): AccountInsightInterface
     {
         if ($plan->isFree()) {
-            throw new RuntimeException('Paid accounts can use only paid plans');
+            throw new LogicException('Paid accounts can use only paid plans');
         }
 
         $mrr = $plan->getMrrValue($billing_period);
@@ -107,9 +108,14 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function addFree(int $account_id, PlanInterface $plan, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
+        if (!$plan->isFree()) {
+            throw new LogicException('Free accounts can use only free plans');
+        }
+
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::FREE,
+            'plan' => get_class($plan),
             'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => 0,
         ]);
