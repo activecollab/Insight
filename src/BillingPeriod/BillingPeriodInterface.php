@@ -18,6 +18,7 @@ namespace ActiveCollab\Insight\BillingPeriod;
  */
 interface BillingPeriodInterface
 {
+    const NONE = 'none';
     const MONTHLY = 'monthly';
     const YEARLY = 'yearly';
 

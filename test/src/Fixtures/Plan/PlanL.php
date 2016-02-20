@@ -31,7 +31,7 @@ class PlanL implements PlanInterface
             case BillingPeriodInterface::YEARLY:
                 return 999;
             default:
-                throw new RuntimeException("Value '{$billing_period->getBillingPeriod()} is not a valid billing period");
+                throw new RuntimeException("Value '{$billing_period->getBillingPeriod()} is not a valid billing period for paid plans");
         }
     }
 }

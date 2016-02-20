@@ -17,7 +17,9 @@ use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Invalid;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Monthly;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
+use ActiveCollab\Insight\Test\Fixtures\Plan\FreePlan;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanZ;
@@ -210,7 +212,16 @@ class AccountsTest extends InsightTestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage Value 'this is not valid billing period is not a valid billing period
+     * @expectedExceptionMessage Paid accounts should have MRR value
+     */
+    public function testAddPaidRequiresPaidPlan()
+    {
+        $this->insight->accounts->addPaid(12345, new FreePlan(), new None());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Value 'this is not valid billing period is not a valid billing period for paid plans
      */
     public function testInvalidBillingPeriodRaisesAnException()
     {

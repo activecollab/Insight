@@ -9,21 +9,20 @@
  * with this source code in the file LICENSE.
  */
 
-namespace ActiveCollab\Insight\Test\Fixtures\Plan;
+namespace ActiveCollab\Insight\Test\Fixtures\BillingPeriod;
 
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
-use ActiveCollab\Insight\Plan\PlanInterface;
 
 /**
- * @package ActiveCollab\Insight\Test\Fixtures\Plan
+ * @package ActiveCollab\Insight\Test\Fixtures\BillingPeriod
  */
-class PlanZ implements PlanInterface
+class None implements BillingPeriodInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function getMrrValue(BillingPeriodInterface $billing_period): float
+    public function getBillingPeriod(): string
     {
-        return -12;
+        return BillingPeriodInterface::NONE;
     }
 }
