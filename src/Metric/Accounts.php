@@ -73,8 +73,10 @@ class Accounts extends Metric implements AccountsInterface
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::PAID,
+            'plan' => get_class($plan),
+            'billing_period' => get_class($billing_period),
             'created_at' => $created_at,
-            'converted_at' => $converted_at,
+            'converted_to_paid_at' => $converted_at,
             'mrr_value' => $mrr,
         ]);
 
@@ -114,8 +116,54 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface
+    public function changePlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
+        if ($row = $this->connection->executeFirstRow("SELECT `id`, `plan`, `billing_period`, `created_at`, `converted_to_free_at`, `converted_to_paid_at`, `canceled_at` FROM `{$this->insight->getTableName('accounts')}` WHERE `id` = ?", $account_id)) {
+            if ($row['canceled_at']) {
+                throw new LogicException("Canceled accounts can't change plans");
+            }
+
+            $converted_at = $timestamp ?? new DateTimeValue();
+
+            if ($row['created_at'] instanceof DateTimeValue && $row['created_at']->getTimestamp() > $converted_at->getTimestamp()) {
+                throw new LogicException("Account can't convert before it is created");
+            }
+
+            if ($row['plan'] == get_class($plan) && $row['billing_period'] == get_class($billing_period)) {
+                throw new LogicException("Can't change to the current plan");
+            }
+
+            $mrr = $plan->getMrrValue($billing_period);
+
+            if ($mrr <= 0) {
+                throw new RuntimeException("MRR can't be less than 0");
+            }
+
+            $field_values = [
+                'plan' => get_class($plan),
+                'billing_period' => get_class($billing_period),
+                'mrr_value' => $mrr,
+            ];
+
+            if (empty($mrr)) {
+                $field_values['status'] = AccountsInterface::FREE;
+
+                if (empty($row['converted_to_free_at'])) {
+                    $field_values['converted_to_free_at'] = $timestamp ?? new DateTimeValue();
+                }
+            } else {
+                $field_values['status'] = AccountsInterface::PAID;
+
+                if (empty($row['converted_to_paid_at'])) {
+                    $field_values['converted_to_paid_at'] = $timestamp ?? new DateTimeValue();
+                }
+            }
+
+            $this->connection->update($this->insight->getTableName('accounts'), $field_values, ['`id` = ?', $account_id]);
+        } else {
+            throw new InvalidArgumentException("Account #{$account_id} does not exist");
+        }
+
         return $this->insight->account($account_id);
     }
 
@@ -167,6 +215,6 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function countPayingOnDay(DateValueInterface $day): int
     {
-        return $this->connection->count($this->insight->getTableName('prefix'), ['DATE(`converted_at`) >= ? AND (`canceled_at` IS NULL OR DATE(`canceled_at`) <= ?)', $day, $day]);
+        return $this->connection->count($this->insight->getTableName('prefix'), ['DATE(`converted_to_paid_at`) >= ? AND (`canceled_at` IS NULL OR DATE(`canceled_at`) <= ?)', $day, $day]);
     }
 }

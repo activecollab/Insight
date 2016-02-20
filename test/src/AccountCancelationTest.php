@@ -20,7 +20,7 @@ use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
 /**
  * @package ActiveCollab\Insight\Test
  */
-class AccountCancelTest extends InsightTestCase
+class AccountCancelationTest extends InsightTestCase
 {
     /**
      * @expectedException \InvalidArgumentException

@@ -72,13 +72,15 @@ interface AccountsInterface
     public function addFree(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
 
     /**
-     * @param  int                     $account_id
-     * @param  PlanInterface           $plan
-     * @param  BillingPeriodInterface  $billing_period
+     * Change account's plan.
+     *
+     * @param  int                         $account_id
+     * @param  PlanInterface               $plan
+     * @param  BillingPeriodInterface      $billing_period
      * @param  DateTimeValueInterface|null $timestamp
      * @return AccountInsightInterface
      */
-    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+    public function changePlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
 
 //    /**
 //     * @param int                    $account_id

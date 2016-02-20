@@ -135,6 +135,8 @@ class AccountsTest extends InsightTestCase
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
+        $this->assertEquals(PlanM::class, $row['plan']);
+        $this->assertEquals(Yearly::class, $row['billing_period']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']->format('Y-m-d H:i:s'));
         $this->assertEquals(date('Y'), $row['cohort_year']);
         $this->assertEquals(date('m'), $row['cohort_month']);
@@ -155,6 +157,8 @@ class AccountsTest extends InsightTestCase
 
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
+        $this->assertEquals(PlanL::class, $row['plan']);
+        $this->assertEquals(Monthly::class, $row['billing_period']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
         $this->assertEquals(date('Y'), $row['cohort_year']);
@@ -175,15 +179,15 @@ class AccountsTest extends InsightTestCase
 
         $this->assertInternalType('array', $row);
         $this->assertEquals(12345, $row['id']);
-        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['converted_at']->format('Y-m-d H:i:s'));
-        $this->assertEquals($row['created_at'], $row['converted_at']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['converted_to_paid_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals($row['created_at'], $row['converted_to_paid_at']);
 
         $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12346);
 
         $this->assertInternalType('array', $row);
         $this->assertEquals(12346, $row['id']);
-        $this->assertEquals('2015-12-05 00:00:00', $row['converted_at']->format('Y-m-d H:i:s'));
-        $this->assertEquals($row['created_at'], $row['converted_at']);
+        $this->assertEquals('2015-12-05 00:00:00', $row['converted_to_paid_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals($row['created_at'], $row['converted_to_paid_at']);
     }
 
     /**
@@ -230,6 +234,6 @@ class AccountsTest extends InsightTestCase
         $this->insight->accounts->addTrial(3, new DateTimeValue('2016-01-22')); // Yearly, churns, but remains active
         $this->insight->accounts->addTrial(4, new DateTimeValue('2016-01-22')); // Never converts
 
-        $this->insight->accounts->upgradeToPlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->changePlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
     }
 }
