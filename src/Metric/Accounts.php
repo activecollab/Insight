@@ -106,17 +106,25 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function addFree(int $account_id, PlanInterface $plan, DateTimeValueInterface $timestamp = null): AccountInsightInterface
+    public function addFree(int $account_id, PlanInterface $plan, DateTimeValueInterface $timestamp = null, DateTimeValueInterface $conversion_timestamp = null): AccountInsightInterface
     {
         if (!$plan->isFree()) {
             throw new LogicException('Free accounts can use only free plans');
+        }
+
+        $created_at = $timestamp ?? new DateTimeValue();
+        $converted_at = $conversion_timestamp ?? $created_at;
+
+        if ($created_at->getTimestamp() > $converted_at->getTimestamp()) {
+            throw new LogicException("Account can't convert before it is created");
         }
 
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::FREE,
             'plan' => get_class($plan),
-            'created_at' => $timestamp ?? new DateTimeValue(),
+            'created_at' => $created_at,
+            'converted_to_free_at' => $converted_at,
             'mrr_value' => 0,
         ]);
 

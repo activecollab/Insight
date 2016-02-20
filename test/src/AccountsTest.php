@@ -106,8 +106,51 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']);
         $this->assertEquals(date('Y'), $row['cohort_year']);
         $this->assertEquals(date('m'), $row['cohort_month']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['converted_to_free_at']->format('Y-m-d H:i:s'));
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
+    }
+
+    /**
+     * Test if creation timestamp can be specified when free account is added.
+     */
+    public function testNewFreeCreationTimestampCanBeSpecified()
+    {
+        $in_two_weeks = new DateTimeValue('+14 days');
+
+        $this->insight->accounts->addFree(12345, new FreePlan(), $in_two_weeks);
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals($in_two_weeks->format('Y-m-d H:i:s'), $row['converted_to_free_at']->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * Test if conversion to free timestamp can be specified.
+     */
+    public function testNewFreeConversionTimestampCanBeSpecified()
+    {
+        $in_two_weeks = new DateTimeValue('+14 days');
+
+        $this->insight->accounts->addFree(12345, new FreePlan(), null, $in_two_weeks);
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 12345);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEquals(12345, $row['id']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['created_at']->format('Y-m-d H:i:s'));
+        $this->assertEquals($in_two_weeks->format('Y-m-d H:i:s'), $row['converted_to_free_at']->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage Account can't convert before it is created
+     */
+    public function testNewFreeConversionCantBeBeforeCreation()
+    {
+        $this->insight->accounts->addFree(12345, new FreePlan(), new DateTimeValue('2016-02-20'), new DateTimeValue('2014-03-18'));
     }
 
     /**

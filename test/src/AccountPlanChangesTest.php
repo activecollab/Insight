@@ -80,7 +80,7 @@ class AccountPlanChangesTest extends InsightTestCase
      */
     public function testConversionDateCanBeSpecified()
     {
-        $in_two_weeks = new DateTimeValue('14 days');
+        $in_two_weeks = new DateTimeValue('+14 days');
 
         $this->insight->accounts->addTrial(1);
 
