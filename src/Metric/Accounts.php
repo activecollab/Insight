@@ -114,7 +114,7 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
-    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp): AccountInsightInterface
+    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
         return $this->insight->account($account_id);
     }

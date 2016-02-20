@@ -75,10 +75,10 @@ interface AccountsInterface
      * @param  int                     $account_id
      * @param  PlanInterface           $plan
      * @param  BillingPeriodInterface  $billing_period
-     * @param  DateTimeValueInterface  $timestamp
+     * @param  DateTimeValueInterface|null $timestamp
      * @return AccountInsightInterface
      */
-    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp): AccountInsightInterface;
+    public function upgradeToPlan(int $account_id, PlanInterface $plan, BillingPeriodInterface $billing_period, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
 
 //    /**
 //     * @param int                    $account_id
