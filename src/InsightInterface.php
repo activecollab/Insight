@@ -13,13 +13,43 @@ declare (strict_types = 1);
 
 namespace ActiveCollab\Insight;
 
+use ActiveCollab\DateValue\DateTimeValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
+use Carbon\Carbon;
 
 /**
  * @package ActiveCollab\Insight
  */
 interface InsightInterface
 {
+    /**
+     * Create a daily data snapshot. Should be triggered every day.
+     *
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function dailySnapshot(DateTimeValueInterface $day);
+
+    /**
+     * Create a weekly data snapshot. Should be triggered on Sunday or Monday.
+     *
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function weeklySnapshot(DateTimeValueInterface $day);
+
+    /**
+     * Create a monthly snapshot. Should be triggered on the first day of the month.
+     *
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function monthlySnapshot(DateTimeValueInterface $day);
+
+    /**
+     * Create a yearly snapshot. Should be triggered on Jan 1st of each year.
+     *
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function yearlySnapshot(DateTimeValueInterface $day);
+
     /**
      * Return account insight instance for the given account.
      *

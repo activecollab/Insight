@@ -14,9 +14,11 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\DateValue\DateTimeValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
 use ActiveCollab\Insight\Metric\Accounts;
 use ActiveCollab\Insight\Metric\MetricInterface;
+use Carbon\Carbon;
 use Doctrine\Common\Inflector\Inflector;
 use InvalidArgumentException;
 use LogicException;
@@ -53,6 +55,37 @@ class Insight implements InsightInterface
         $this->log = $log;
 
         $this->existing_tables = $this->connection->getTableNames();
+    }
+
+    /**
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function dailySnapshot(DateTimeValueInterface $day)
+    {
+    }
+
+    /**
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function weeklySnapshot(DateTimeValueInterface $day)
+    {
+        if ($day->dayOfWeek > 1) {
+            throw new InvalidArgumentException('Weekly snapshot can be done on Sundays and Mondays only');
+        }
+    }
+
+    /**
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function monthlySnapshot(DateTimeValueInterface $day)
+    {
+    }
+
+    /**
+     * @param DateTimeValueInterface|Carbon $day
+     */
+    public function yearlySnapshot(DateTimeValueInterface $day)
+    {
     }
 
     /**

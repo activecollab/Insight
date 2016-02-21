@@ -293,14 +293,4 @@ class AccountsTest extends InsightTestCase
         $this->insight->accounts->addTrial(12345);
         $this->assertTrue($this->insight->accounts->exists(12345));
     }
-
-//    public function testCountPayingOnDay()
-//    {
-//        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-01-22')); // Monhtly, churns soon
-//        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-01-22')); // Monthly, loyal
-//        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-01-22')); // Yearly, churns, but remains active
-//        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-01-22')); // Never converts
-//
-//        $this->insight->accounts->changePlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
-//    }
 }
