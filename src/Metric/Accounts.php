@@ -357,10 +357,8 @@ class Accounts extends Metric implements AccountsInterface
         if ($day->isToday()) {
             return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::RETIRED]);
         } else {
-
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND DATE(`retired_at`) <= ?', AccountsInterface::NOT_ACTIVE, $day]);
         }
-
-        return 0;
     }
 
     /**
@@ -376,9 +374,7 @@ class Accounts extends Metric implements AccountsInterface
         if ($day->isToday()) {
             return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::CANCELED]);
         } else {
-
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ? AND DATE(`canceled_at`) <= ?', AccountsInterface::CANCELED, $day]);
         }
-
-        return 0;
     }
 }
