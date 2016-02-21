@@ -189,6 +189,49 @@ class Accounts extends Metric implements AccountsInterface
     /**
      * {@inheritdoc}
      */
+    public function isRetired(int $account_id): bool
+    {
+        if ($row = $this->connection->executeFirstRow("SELECT `id`, `retired_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
+            return !empty($row['retired_at']);
+        } else {
+            throw new InvalidArgumentException("Account #{$account_id} does not exist");
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function retire(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface
+    {
+        if ($row = $this->connection->executeFirstRow("SELECT `id`, `created_at`, `retired_at`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
+            if (!empty($row['retired_at'])) {
+                throw new LogicException("Account #{$account_id} is already retired");
+            }
+
+            if (!empty($row['canceled_at'])) {
+                throw new LogicException("Account #{$account_id} is already canceled");
+            }
+
+            $timestamp = $timestamp ?? new DateTimeValue();
+
+            /** @var DateTimeValue $created_at */
+            $created_at = $row['created_at'];
+
+            if ($timestamp->getTimestamp() < $created_at->getTimestamp()) {
+                throw new LogicException("Account retireing timestamp can't be before creation timestamp");
+            }
+
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `retired_at` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, 0, $account_id);
+        } else {
+            throw new InvalidArgumentException("Account #{$account_id} does not exist");
+        }
+
+        return $this->insight->account($account_id);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isCanceled(int $account_id): bool
     {
         if ($row = $this->connection->executeFirstRow("SELECT `id`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
@@ -307,6 +350,16 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function countRetired(DateValueInterface $day = null): int
     {
+        if (empty($day)) {
+            $day = new DateTimeValue();
+        }
+
+        if ($day->isToday()) {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::RETIRED]);
+        } else {
+
+        }
+
         return 0;
     }
 
@@ -316,6 +369,16 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function countCanceled(DateValueInterface $day = null): int
     {
+        if (empty($day)) {
+            $day = new DateTimeValue();
+        }
+
+        if ($day->isToday()) {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::CANCELED]);
+        } else {
+
+        }
+
         return 0;
     }
 }

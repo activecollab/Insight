@@ -101,6 +101,23 @@ interface AccountsInterface
 //    public function downgradeToFree(int $account_id);
 
     /**
+     * Return true if account exists and it is retired.
+     *
+     * @param  int  $account_id
+     * @return bool
+     */
+    public function isRetired(int $account_id): bool;
+
+    /**
+     * Mark an account as canceled.
+     *
+     * @param  int                         $account_id
+     * @param  DateTimeValueInterface|null $timestamp
+     * @return AccountInsightInterface
+     */
+    public function retire(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
+
+    /**
      * Return true if account exists and it is canceled.
      *
      * @param  int  $account_id
