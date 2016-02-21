@@ -242,7 +242,7 @@ class Accounts extends Metric implements AccountsInterface
         if ($day->isToday()) {
             return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::ACTIVE]);
         } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `created_at` <= ? AND ((`retired_at` IS NULL OR `retired_at` > ?) AND (`canceled_at` IS NULL OR `canceled_at` > ?))', AccountsInterface::ACTIVE, $day, $day, $day]);
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `created_at` <= ? AND ((`retired_at` IS NULL OR `retired_at` >= ?) AND (`canceled_at` IS NULL OR `canceled_at` >= ?))', AccountsInterface::ACTIVE, $day, $day, $day]);
         }
     }
 
@@ -252,7 +252,15 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function countTrials(DateValueInterface $day = null): int
     {
-        return 0;
+        if (empty($day)) {
+            $day = new DateTimeValue();
+        }
+
+        if ($day->isToday()) {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ? AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::TRIAL]);
+        } else {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`had_trial` = ? AND `created_at` <= ? AND ((`converted_to_free_at` IS NULL OR `converted_to_free_at` >= ?) AND (`converted_to_paid_at` IS NULL OR `converted_to_paid_at` >= ?)) AND ((`retired_at` IS NULL OR `retired_at` >= ?) AND (`canceled_at` IS NULL OR `canceled_at` >= ?))', true, $day, $day, $day, $day, $day]);
+        }
     }
 
     /**
