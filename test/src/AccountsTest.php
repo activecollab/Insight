@@ -294,26 +294,4 @@ class AccountsTest extends InsightTestCase
         $this->insight->accounts->addTrial(12345);
         $this->assertTrue($this->insight->accounts->exists(12345));
     }
-
-    /**
-     * Test count active accounts on a given day.
-     */
-    public function testCountActiveOnDay()
-    {
-        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
-        $this->insight->accounts->addFree(2, new FreePlan(), new DateTimeValue('2016-02-13'));
-        $this->insight->accounts->addPaid(3, new PlanL(), new Yearly(), new DateTimeValue('2016-02-14')); // Cancel!
-        $this->insight->accounts->addPaid(4, new PlanM(), new Monthly(), new DateTimeValue('2016-02-15'));
-
-        $this->insight->accounts->cancel(3, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-14'));
-
-        $this->assertEquals(1, $this->insight->accounts->countActive(new DateValue('2016-02-12')));
-        $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-13')));
-        $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
-        $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-15')));
-
-        $this->current_timestamp = DateTimeValue::setTestNow(new DateTimeValue('2016-02-16'));
-
-        $this->assertEquals(3, $this->insight->accounts->countActive());
-    }
 }
