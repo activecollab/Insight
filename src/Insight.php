@@ -18,6 +18,7 @@ use ActiveCollab\DateValue\DateTimeValueInterface;
 use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
 use ActiveCollab\Insight\Metric\Accounts;
+use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Carbon\Carbon;
 use Doctrine\Common\Inflector\Inflector;
@@ -181,7 +182,7 @@ class Insight implements InsightInterface
                 case 'accounts':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL,
-                        `status` ENUM('trial', 'free', 'paid') NOT NULL,
+                        `status` ENUM ? NOT NULL,
                         `plan` varchar(191) DEFAULT NULL,
                         `billing_period` varchar(191) DEFAULT NULL,
                         `created_at` DATETIME NOT NULL,
@@ -197,7 +198,7 @@ class Insight implements InsightInterface
                         PRIMARY KEY (`id`),
                         KEY (`status`),
                         KEY (`created_at`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", Accounts::CANCELATION_REASONS);
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", AccountsInterface::STATUSES, AccountsInterface::CANCELATION_REASONS);
 
                     $this->connection->execute('DROP TRIGGER IF EXISTS `account_cohort`');
                     $this->connection->execute("CREATE TRIGGER `account_cohort` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW

@@ -191,8 +191,8 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function isRetired(int $account_id): bool
     {
-        if ($row = $this->connection->executeFirstRow("SELECT `id`, `retired_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
-            return !empty($row['retired_at']);
+        if ($row = $this->connection->executeFirstRow("SELECT `id`, `status`, `retired_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
+            return $row['status'] === AccountsInterface::RETIRED && !empty($row['retired_at']);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -221,7 +221,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account retireing timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `retired_at` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, 0, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `retired_at` = ?, `mrr_value` = ? WHERE `id` = ?", AccountsInterface::RETIRED, $timestamp, 0, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -234,8 +234,8 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function isCanceled(int $account_id): bool
     {
-        if ($row = $this->connection->executeFirstRow("SELECT `id`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
-            return !empty($row['canceled_at']);
+        if ($row = $this->connection->executeFirstRow("SELECT `id`, `status`, `canceled_at` FROM `$this->accounts_table` WHERE `id` = ?", $account_id)) {
+            return $row['status'] === AccountsInterface::CANCELED && !empty($row['canceled_at']);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -264,7 +264,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account cancelation timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ? WHERE `id` = ?", $timestamp, $reason, 0, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ? WHERE `id` = ?", AccountsInterface::CANCELED, $timestamp, $reason, 0, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }

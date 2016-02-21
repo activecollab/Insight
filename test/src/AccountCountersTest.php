@@ -60,7 +60,7 @@ class AccountCountersTest extends InsightTestCase
         $this->assertEquals(0, $this->insight->accounts->countActive(new DateValue('2016-02-11')));
         $this->assertEquals(1, $this->insight->accounts->countActive(new DateValue('2016-02-12')));
         $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-13')));
-        $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
+        $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
         $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-15')));
         $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-16')));
     }
