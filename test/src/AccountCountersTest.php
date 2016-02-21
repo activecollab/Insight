@@ -107,4 +107,100 @@ class AccountCountersTest extends InsightTestCase
         $this->assertEquals(2, $this->insight->accounts->countTrials(new DateValue('2016-02-16'))); // No new trials, one will be canceled
         $this->assertEquals(1, $this->insight->accounts->countTrials(new DateValue('2016-02-17')));
     }
+
+    /**
+     * Test free account counter for the current state (today), without going back through history.
+     */
+    public function testCountFreeToday()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13')); // Convert to paid on 2016-02-14
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14')); // Convert to free on 2016-02-15
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15')); // Cancel
+        $this->insight->accounts->addFree(5, new FreePlan(), new DateTimeValue('2016-02-16')); // Converts to paid plan on 2016-02-16
+        $this->insight->accounts->changePlan(5, new PlanL(), new Yearly(), new DateTimeValue('2016-02-16'));
+
+        $this->insight->accounts->changePlan(2, new PlanM(), new Yearly(), new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->cancel(4, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-16'));
+
+        $this->current_timestamp = new DateTimeValue('2016-02-16');
+        DateTimeValue::setTestNow($this->current_timestamp);
+
+        $this->assertEquals(2, $this->insight->accounts->countFree());
+    }
+
+    /**
+     * Test count free accounts on a given date.
+     */
+    public function testCountFree()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13'));
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15'));
+
+        $this->insight->accounts->changePlan(2, new FreePlan(), new None(), new DateTimeValue('2016-02-13'));
+        $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->changePlan(4, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
+
+        $this->insight->accounts->changePlan(3, new PlanL(), new Yearly(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->cancel(4, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-16'));
+
+        $this->assertEquals(0, $this->insight->accounts->countFree(new DateValue('2016-02-11')));
+        $this->assertEquals(0, $this->insight->accounts->countFree(new DateValue('2016-02-12')));
+        $this->assertEquals(1, $this->insight->accounts->countFree(new DateValue('2016-02-13')));
+        $this->assertEquals(2, $this->insight->accounts->countFree(new DateValue('2016-02-14')));
+        $this->assertEquals(3, $this->insight->accounts->countFree(new DateValue('2016-02-15')));
+        $this->assertEquals(2, $this->insight->accounts->countFree(new DateValue('2016-02-16')));
+        $this->assertEquals(1, $this->insight->accounts->countFree(new DateValue('2016-02-17')));
+    }
+
+    /**
+     * Test paid account counter for the current state (today), without going back through history.
+     */
+    public function testCountPaidToday()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13')); // Convert to free on 2016-02-14
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14')); // Convert to paid on 2016-02-15
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15')); // Cancel
+        $this->insight->accounts->addPaid(5, new PlanL(), new Yearly(), new DateTimeValue('2016-02-16')); // Converts to free plan on 2016-02-16
+        $this->insight->accounts->changePlan(5, new FreePlan(), new None(), new DateTimeValue('2016-02-16'));
+
+        $this->insight->accounts->changePlan(2, new PlanM(), new Yearly(), new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->cancel(4, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-16'));
+
+        $this->current_timestamp = new DateTimeValue('2016-02-16');
+        DateTimeValue::setTestNow($this->current_timestamp);
+
+        $this->assertEquals(2, $this->insight->accounts->countPaid());
+    }
+
+    /**
+     * Test count paid accounts on a given date.
+     */
+    public function testCountPaid()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13'));
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15'));
+
+        $this->insight->accounts->changePlan(2, new PlanM(), new Yearly(), new DateTimeValue('2016-02-13'));
+        $this->insight->accounts->changePlan(3, new PlanM(), new Monthly(), new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->changePlan(4, new PlanM(), new Yearly(), new DateTimeValue('2016-02-15'));
+
+        $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->cancel(4, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-16'));
+
+        $this->assertEquals(0, $this->insight->accounts->countPaid(new DateValue('2016-02-11')));
+        $this->assertEquals(0, $this->insight->accounts->countPaid(new DateValue('2016-02-12')));
+        $this->assertEquals(1, $this->insight->accounts->countPaid(new DateValue('2016-02-13')));
+        $this->assertEquals(2, $this->insight->accounts->countPaid(new DateValue('2016-02-14')));
+        $this->assertEquals(3, $this->insight->accounts->countPaid(new DateValue('2016-02-15')));
+        $this->assertEquals(2, $this->insight->accounts->countPaid(new DateValue('2016-02-16')));
+        $this->assertEquals(1, $this->insight->accounts->countPaid(new DateValue('2016-02-17')));
+    }
 }
