@@ -14,7 +14,9 @@ namespace ActiveCollab\Insight\Test;
 use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Monthly;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
+use ActiveCollab\Insight\Test\Fixtures\Plan\FreePlan;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
 
@@ -65,6 +67,7 @@ class AccountPlanChangesTest extends InsightTestCase
 
         $this->assertInternalType('array', $row);
         $this->assertEmpty($row['converted_to_paid_at']);
+        $this->assertEmpty($row['converted_to_free_at']);
 
         $this->insight->accounts->changePlan(1, new PlanM(), new Monthly());
 
@@ -73,6 +76,7 @@ class AccountPlanChangesTest extends InsightTestCase
         $this->assertInternalType('array', $row);
         $this->assertInstanceOf(DateTimeValue::class, $row['converted_to_paid_at']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:is'), $row['converted_to_paid_at']->format('Y-m-d H:i:is'));
+        $this->assertEmpty($row['converted_to_free_at']);
     }
 
     /**
@@ -106,5 +110,28 @@ class AccountPlanChangesTest extends InsightTestCase
     {
         $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-20'));
         $this->insight->accounts->changePlan(1, new PlanM(), new Monthly(), new DateTimeValue('2016-02-18'));
+    }
+
+    /**
+     * Test if trial converts to free.
+     */
+    public function testTrialConvertsToFree()
+    {
+        $this->insight->accounts->addTrial(1);
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 1);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEmpty($row['converted_to_paid_at']);
+        $this->assertEmpty($row['converted_to_free_at']);
+
+        $this->insight->accounts->changePlan(1, new FreePlan(), new None());
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM {$this->insight->getTableName('accounts')} WHERE `id` = ?", 1);
+
+        $this->assertInternalType('array', $row);
+        $this->assertEmpty($row['converted_to_paid_at']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['converted_to_free_at']);
+        $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:is'), $row['converted_to_free_at']->format('Y-m-d H:i:is'));
     }
 }

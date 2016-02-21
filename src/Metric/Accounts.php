@@ -153,8 +153,8 @@ class Accounts extends Metric implements AccountsInterface
 
             $mrr = $plan->getMrrValue($billing_period);
 
-            if ($mrr <= 0) {
-                throw new RuntimeException("MRR can't be less than 0");
+            if ($mrr < 0) {
+                throw new RuntimeException("MRR can't be negative value");
             }
 
             $field_values = [

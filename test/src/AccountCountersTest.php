@@ -16,6 +16,7 @@ use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Monthly;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
 use ActiveCollab\Insight\Test\Fixtures\Plan\FreePlan;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
@@ -38,7 +39,8 @@ class AccountCountersTest extends InsightTestCase
 
         $this->insight->accounts->cancel(3, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-14'));
 
-        $this->current_timestamp = DateTimeValue::setTestNow(new DateTimeValue('2016-02-16'));
+        $this->current_timestamp = new DateTimeValue('2016-02-16');
+        DateTimeValue::setTestNow($this->current_timestamp);
 
         $this->assertEquals(3, $this->insight->accounts->countActive());
     }
@@ -59,5 +61,25 @@ class AccountCountersTest extends InsightTestCase
         $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-13')));
         $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
         $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-15')));
+    }
+
+    /**
+     * Test trials counter for the current state (today), without going back through history.
+     */
+    public function testCountTrialsToday()
+    {
+        $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
+        $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13')); // Convert to paid on 2016-02-14
+        $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14')); // Convert to free on 2016-02-15
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15')); // Cancel
+
+        $this->insight->accounts->changePlan(2, new PlanM(), new Yearly(), new DateTimeValue('2016-02-14'));
+        $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
+        $this->insight->accounts->cancel(4, AccountsInterface::USER_CANCELED, new DateTimeValue('2016-02-16'));
+
+        $this->current_timestamp = new DateTimeValue('2016-02-16');
+        DateTimeValue::setTestNow($this->current_timestamp);
+
+        $this->assertEquals(3, $this->insight->accounts->countActive());
     }
 }
