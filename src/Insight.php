@@ -191,6 +191,7 @@ class Insight implements InsightInterface
                         `converted_to_paid_at` DATETIME NULL,
                         `retired_at` DATETIME NULL,
                         `canceled_at` DATETIME NULL,
+                        `had_trial` TINYINT(1) NOT NULL DEFAULT '0',
                         `cancelation_reason` ENUM ?,
                         `mrr_value` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),

@@ -12,7 +12,6 @@
 namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\DateValue\DateTimeValue;
-use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
@@ -69,6 +68,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
+        $this->assertTrue($row['had_trial']);
     }
 
     /**
@@ -110,6 +110,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:s'), $row['converted_to_free_at']->format('Y-m-d H:i:s'));
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(0, $row['mrr_value']);
+        $this->assertFalse($row['had_trial']);
     }
 
     /**
@@ -201,6 +202,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(499, $row['mrr_value']);
+        $this->assertFalse($row['had_trial']);
     }
 
     /**
@@ -224,6 +226,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
         $this->assertEquals(99, $row['mrr_value']);
+        $this->assertFalse($row['had_trial']);
     }
 
     /**

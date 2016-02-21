@@ -77,6 +77,7 @@ class AccountPlanChangesTest extends InsightTestCase
         $this->assertInstanceOf(DateTimeValue::class, $row['converted_to_paid_at']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:is'), $row['converted_to_paid_at']->format('Y-m-d H:i:is'));
         $this->assertEmpty($row['converted_to_free_at']);
+        $this->assertTrue($row['had_trial']);
     }
 
     /**
@@ -133,5 +134,6 @@ class AccountPlanChangesTest extends InsightTestCase
         $this->assertEmpty($row['converted_to_paid_at']);
         $this->assertInstanceOf(DateTimeValue::class, $row['converted_to_free_at']);
         $this->assertEquals($this->current_timestamp->format('Y-m-d H:i:is'), $row['converted_to_free_at']->format('Y-m-d H:i:is'));
+        $this->assertTrue($row['had_trial']);
     }
 }

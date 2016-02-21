@@ -98,6 +98,7 @@ class Accounts extends Metric implements AccountsInterface
             'status' => self::TRIAL,
             'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => 0,
+            'had_trial' => true,
         ]);
 
         return $this->insight->account($account_id);
