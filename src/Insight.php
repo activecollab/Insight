@@ -15,6 +15,7 @@ namespace ActiveCollab\Insight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
 use ActiveCollab\DateValue\DateTimeValueInterface;
+use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
 use ActiveCollab\Insight\Metric\Accounts;
 use ActiveCollab\Insight\Metric\MetricInterface;
@@ -58,16 +59,17 @@ class Insight implements InsightInterface
     }
 
     /**
-     * @param DateTimeValueInterface|Carbon $day
+     * @param DateValueInterface|Carbon $day
      */
-    public function dailySnapshot(DateTimeValueInterface $day)
+    public function dailySnapshot(DateValueInterface $day)
     {
+        $this->daily_accounts_history->dailySnapshot($day);
     }
 
     /**
-     * @param DateTimeValueInterface|Carbon $day
+     * @param DateValueInterface|Carbon $day
      */
-    public function weeklySnapshot(DateTimeValueInterface $day)
+    public function weeklySnapshot(DateValueInterface $day)
     {
         if ($day->dayOfWeek > 1) {
             throw new InvalidArgumentException('Weekly snapshot can be done on Sundays and Mondays only');
@@ -75,16 +77,16 @@ class Insight implements InsightInterface
     }
 
     /**
-     * @param DateTimeValueInterface|Carbon $day
+     * @param DateValueInterface|Carbon $day
      */
-    public function monthlySnapshot(DateTimeValueInterface $day)
+    public function monthlySnapshot(DateValueInterface $day)
     {
     }
 
     /**
-     * @param DateTimeValueInterface|Carbon $day
+     * @param DateValueInterface|Carbon $day
      */
-    public function yearlySnapshot(DateTimeValueInterface $day)
+    public function yearlySnapshot(DateValueInterface $day)
     {
     }
 
@@ -187,6 +189,7 @@ class Insight implements InsightInterface
                         `cohort_year` SMALLINT unsigned NOT NULL,
                         `converted_to_free_at` DATETIME NULL,
                         `converted_to_paid_at` DATETIME NULL,
+                        `retired_at` DATETIME NULL,
                         `canceled_at` DATETIME NULL,
                         `cancelation_reason` ENUM ?,
                         `mrr_value` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
@@ -276,6 +279,12 @@ class Insight implements InsightInterface
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` bigint unsigned NOT NULL AUTO_INCREMENT,
                         `day` DATE NOT NULL,
+                        `started_with_active` int unsigned NOT NULL DEFAULT '0',
+                        `started_with_trials` int unsigned NOT NULL DEFAULT '0',
+                        `started_with_free` int unsigned NOT NULL DEFAULT '0',
+                        `started_with_paid` int unsigned NOT NULL DEFAULT '0',
+                        `started_with_retired` int unsigned NOT NULL DEFAULT '0',
+                        `started_with_canceled` int unsigned NOT NULL DEFAULT '0',
                         `new_accounts` int unsigned NOT NULL DEFAULT '0',
                         `conversions_to_trial` int unsigned NOT NULL DEFAULT '0',
                         `conversions_to_free` int unsigned NOT NULL DEFAULT '0',

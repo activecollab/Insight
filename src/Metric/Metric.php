@@ -12,6 +12,7 @@
 namespace ActiveCollab\Insight\Metric;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
+use ActiveCollab\Insight\Insight;
 use ActiveCollab\Insight\InsightInterface;
 use Psr\Log\LoggerInterface;
 
@@ -21,7 +22,7 @@ use Psr\Log\LoggerInterface;
 abstract class Metric implements MetricInterface
 {
     /**
-     * @var InsightInterface
+     * @var Insight|InsightInterface
      */
     protected $insight;
 

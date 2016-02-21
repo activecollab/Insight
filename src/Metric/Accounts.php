@@ -14,15 +14,15 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight\Metric;
 
 use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\DateValue\DateTimeValueInterface;
 use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
-use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
+use Carbon\Carbon;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
-use ActiveCollab\DateValue\DateTimeValueInterface;
 
 /**
  * @package ActiveCollab\Insight\Metric
@@ -229,10 +229,69 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
      */
-    public function countPayingOnDay(DateValueInterface $day): int
+    public function countActive(DateValueInterface $day = null): int
     {
-        return $this->connection->count($this->insight->getTableName('prefix'), ['DATE(`converted_to_paid_at`) >= ? AND (`canceled_at` IS NULL OR DATE(`canceled_at`) <= ?)', $day, $day]);
+        if (empty($day)) {
+            $day = new DateTimeValue();
+        }
+
+        if ($day->isToday()) {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::ACTIVE]);
+        } else {
+            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `created_at` <= ? AND ((`retired_at` IS NULL OR `retired_at` > ?) AND (`canceled_at` IS NULL OR `canceled_at` > ?))', AccountsInterface::ACTIVE, $day, $day, $day]);
+        }
+    }
+
+    /**
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
+     */
+    public function countTrials(DateValueInterface $day = null): int
+    {
+        return 0;
+    }
+
+    /**
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
+     */
+    public function countFree(DateValueInterface $day = null): int
+    {
+        return 0;
+    }
+
+    /**
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
+     */
+    public function countPaid(DateValueInterface $day = null): int
+    {
+        if ($day->isToday()) {
+
+        } else {
+
+        }
+        return $this->connection->count($this->insight->getTableName('accounts'), ['DATE(`converted_to_paid_at`) >= ? AND (`canceled_at` IS NULL OR DATE(`canceled_at`) <= ?)', $day, $day]);
+    }
+
+    /**
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
+     */
+    public function countRetired(DateValueInterface $day = null): int
+    {
+        return 0;
+    }
+
+    /**
+     * @param  DateValueInterface|Carbon|null $day
+     * @return int
+     */
+    public function countCanceled(DateValueInterface $day = null): int
+    {
+        return 0;
     }
 }

@@ -38,7 +38,7 @@ class DailyAccountsHistoryTest extends InsightTestCase
         $daily_accounts_history_table = $this->insight->getTableName('daily_accounts_history');
 
         $this->assertEquals(0, $this->connection->count($daily_accounts_history_table));
-        $this->assertSame(1, $this->insight->daily_accounts_history->getDayId());
+        $this->assertSame(1, $this->insight->daily_accounts_history->getSnapshotId());
         $this->assertEquals(1, $this->connection->count($daily_accounts_history_table));
 
         $row = $this->connection->executeFirstRow("SELECT * FROM $daily_accounts_history_table WHERE id = ?", 1);

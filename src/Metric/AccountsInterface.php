@@ -27,8 +27,12 @@ interface AccountsInterface
     const TRIAL = 'trial';
     const FREE = 'free';
     const PAID = 'paid';
+    const RETIRED = 'retired';
+    const CANCELED = 'canceled';
 
-    const STATUSES = [self::TRIAL, self::FREE, self::PAID];
+    const STATUSES = [self::TRIAL, self::FREE, self::PAID, self::RETIRED, self::CANCELED];
+    const ACTIVE = [self::TRIAL, self::FREE, self::PAID];
+    const NOT_ACTIVE = [self::RETIRED, self::CANCELED];
 
     const TRIAL_EXPIRED = 'trial_expired';   // Trial expired and user never returned to convert.
     const USER_ABANDONED = 'user_abandoned'; // Payment failed, but user never returned to correct the billing info.
@@ -115,10 +119,50 @@ interface AccountsInterface
     public function cancel(int $account_id, string $reason = self::USER_CANCELED, DateTimeValueInterface $timestamp = null): AccountInsightInterface;
 
     /**
-     * Return number of active, paying accounts on a given day.
+     * Return total number of accounts on a day.
      *
-     * @param  DateValueInterface $day
+     * @param  DateValueInterface|null $day
      * @return int
      */
-    public function countPayingOnDay(DateValueInterface $day): int;
+    public function countActive(DateValueInterface $day = null): int;
+
+    /**
+     * Return total number of trials on a day.
+     *
+     * @param  DateValueInterface|null $day
+     * @return int
+     */
+    public function countTrials(DateValueInterface $day = null): int;
+
+    /**
+     * Return total number of free accounts on a day.
+     *
+     * @param  DateValueInterface|null $day
+     * @return int
+     */
+    public function countFree(DateValueInterface $day = null): int;
+
+    /**
+     * Return total number of paid accounts on a day.
+     *
+     * @param  DateValueInterface|null $day
+     * @return int
+     */
+    public function countPaid(DateValueInterface $day = null): int;
+
+    /**
+     * Return total number of retired accounts on a day.
+     *
+     * @param  DateValueInterface|null $day
+     * @return int
+     */
+    public function countRetired(DateValueInterface $day = null): int;
+
+    /**
+     * Return total number of canceled accounts on a day.
+     *
+     * @param  DateValueInterface|null $day
+     * @return int
+     */
+    public function countCanceled(DateValueInterface $day = null): int;
 }
