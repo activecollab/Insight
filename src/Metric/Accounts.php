@@ -83,6 +83,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => $created_at,
             'converted_to_paid_at' => $converted_at,
             'mrr_value' => $mrr,
+            'updated_at' => new DateTimeValue(),
         ]);
 
         return $this->insight->account($account_id);
@@ -99,6 +100,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => $timestamp ?? new DateTimeValue(),
             'mrr_value' => 0,
             'had_trial' => true,
+            'updated_at' => new DateTimeValue(),
         ]);
 
         return $this->insight->account($account_id);
@@ -127,6 +129,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => $created_at,
             'converted_to_free_at' => $converted_at,
             'mrr_value' => 0,
+            'updated_at' => new DateTimeValue(),
         ]);
 
         return $this->insight->account($account_id);
@@ -162,6 +165,7 @@ class Accounts extends Metric implements AccountsInterface
                 'plan' => get_class($plan),
                 'billing_period' => get_class($billing_period),
                 'mrr_value' => $mrr,
+                'updated_at' => new DateTimeValue(),
             ];
 
             if (empty($mrr)) {
@@ -221,7 +225,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account retireing timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `retired_at` = ?, `mrr_value` = ? WHERE `id` = ?", AccountsInterface::RETIRED, $timestamp, 0, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `retired_at` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::RETIRED, $timestamp, 0, new DateTimeValue(), $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -264,7 +268,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account cancelation timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ? WHERE `id` = ?", AccountsInterface::CANCELED, $timestamp, $reason, 0, $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::CANCELED, $timestamp, $reason, 0, new DateTimeValue(), $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }

@@ -14,10 +14,8 @@ declare (strict_types = 1);
 namespace ActiveCollab\Insight;
 
 use ActiveCollab\DatabaseConnection\ConnectionInterface;
-use ActiveCollab\DateValue\DateTimeValueInterface;
 use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsight;
-use ActiveCollab\Insight\Metric\Accounts;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Metric\MetricInterface;
 use Carbon\Carbon;
@@ -195,6 +193,7 @@ class Insight implements InsightInterface
                         `had_trial` TINYINT(1) NOT NULL DEFAULT '0',
                         `cancelation_reason` ENUM ?,
                         `mrr_value` DECIMAL(13,3) unsigned NOT NULL DEFAULT '0',
+                        `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`),
                         KEY (`status`),
                         KEY (`created_at`)
@@ -205,6 +204,45 @@ class Insight implements InsightInterface
                         BEGIN
                             SET NEW.cohort_month = MONTH(NEW.created_at);
                             SET NEW.cohort_year = YEAR(NEW.created_at);
+                        END");
+
+                    break;
+                case 'account_updates':
+                    $account_table = $this->getTableName('accounts');
+
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `account_id` int unsigned NOT NULL DEFAULT '0',
+                        `old_status` ENUM ? DEFAULT NULL,
+                        `new_status` ENUM ? DEFAULT NULL,
+                        `old_plan` varchar(191) DEFAULT NULL,
+                        `new_plan` varchar(191) DEFAULT NULL,
+                        `old_billing_period` varchar(191) DEFAULT NULL,
+                        `new_billing_period` varchar(191) DEFAULT NULL,
+                        `old_mrr_value` DECIMAL(13,3) unsigned DEFAULT NULL,
+                        `new_mrr_value` DECIMAL(13,3) unsigned DEFAULT NULL,
+                        `created_at` DATETIME NOT NULL,
+                        PRIMARY KEY (`id`),
+                        KEY (`account_id`),
+                        KEY (`created_at`),
+                        FOREIGN KEY (`account_id`)
+                            REFERENCES `$account_table` (`id`)
+                            ON UPDATE CASCADE ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", AccountsInterface::STATUSES, AccountsInterface::STATUSES);
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_updated`');
+                    $this->connection->execute("CREATE TRIGGER `account_updated` AFTER UPDATE ON `$account_table` FOR EACH ROW
+                        BEGIN
+                            IF NEW.status != OLD.status OR NEW.plan != OLD.plan OR NEW.billing_period != OLD.billing_period OR NEW.mrr_value != OLD.mrr_value THEN
+                                INSERT INTO `$prefixed_table_name` (`account_id`, `old_status`, `new_status`, `old_plan`, `new_plan`, `old_billing_period`, `new_billing_period`, `old_mrr_value`, `new_mrr_value`, `created_at`) VALUES (
+                                    OLD.`id`, 
+                                    OLD.`status`, NEW.`status`,  
+                                    OLD.`plan`, NEW.`plan`,  
+                                    OLD.`billing_period`, NEW.`billing_period`,  
+                                    OLD.`mrr_value`, NEW.`mrr_value`,
+                                    NEW.`updated_at`
+                                );
+                            END IF;
                         END");
 
                     break;
