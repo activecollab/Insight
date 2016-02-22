@@ -246,6 +246,36 @@ class Insight implements InsightInterface
                         END");
 
                     break;
+                case 'account_status_spans':
+                    $account_table = $this->getTableName('accounts');
+
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `account_id` int unsigned NOT NULL DEFAULT '0',
+                        `status` ENUM ? DEFAULT NULL,
+                        `started_at` DATETIME NOT NULL,
+                        `ended_at` DATETIME DEFAULT NULL,
+                        PRIMARY KEY (`id`),
+                        KEY (`started_at`),
+                        KEY (`ended_at`),
+                        FOREIGN KEY (`account_id`)
+                            REFERENCES `$account_table` (`id`)
+                            ON UPDATE CASCADE ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", AccountsInterface::STATUSES);
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_span_on_insert`');
+                    $this->connection->execute("CREATE TRIGGER `account_span_on_insert` AFTER INSERT ON `$account_table` FOR EACH ROW INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_span_on_update`');
+                    $this->connection->execute("CREATE TRIGGER `account_span_on_update` AFTER UPDATE ON `$account_table` FOR EACH ROW
+                        BEGIN
+                            IF NEW.status != OLD.status THEN
+                                UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id`;
+                                INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);
+                            END IF;
+                        END");
+
+                    break;
                 case 'monthly_churn':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,

@@ -109,6 +109,9 @@ class AccountUpdatesTest extends InsightTestCase
         $this->assertEquals(Yearly::class, $row['new_billing_period']);
     }
 
+    /**
+     * Test if MRR changes are recorded.
+     */
     public function testMrrChangesAreRecorded()
     {
         $account_updates_table = $this->insight->getTableName('account_updates');
@@ -123,6 +126,9 @@ class AccountUpdatesTest extends InsightTestCase
         $this->assertEquals((new PlanM())->getMrrValue(new Yearly()), $row['new_mrr_value']);
     }
 
+    /**
+     * Test if created at timestamp is properly recorded on different events.
+     */
     public function testCreationTimestampIsRecorded()
     {
         $account_updates_table = $this->insight->getTableName('account_updates');
@@ -159,7 +165,7 @@ class AccountUpdatesTest extends InsightTestCase
         $this->assertInstanceOf(DateTimeValue::class, $second_update_timestamp);
         $this->assertEquals('2016-02-22 13:13:13', $second_update_timestamp->format('Y-m-d H:i:s'));
 
-        /** @var DateTimeValue $first_update_timestamp */
+        /* @var DateTimeValue $first_update_timestamp */
         $third_update_timestamp = $this->connection->executeFirstCell("SELECT `created_at` FROM `$account_updates_table` WHERE `id` = ?", 3);
 
         $this->assertInstanceOf(DateTimeValue::class, $third_update_timestamp);
