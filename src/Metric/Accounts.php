@@ -15,6 +15,7 @@ namespace ActiveCollab\Insight\Metric;
 
 use ActiveCollab\DateValue\DateTimeValue;
 use ActiveCollab\DateValue\DateTimeValueInterface;
+use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
@@ -83,7 +84,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => $created_at,
             'converted_to_paid_at' => $converted_at,
             'mrr_value' => $mrr,
-            'updated_at' => new DateTimeValue(),
+            'updated_at' => $converted_at,
         ]);
 
         return $this->insight->account($account_id);
@@ -94,13 +95,17 @@ class Accounts extends Metric implements AccountsInterface
      */
     public function addTrial(int $account_id, DateTimeValueInterface $timestamp = null): AccountInsightInterface
     {
+        if (empty($timestamp)) {
+            $timestamp = new DateTimeValue();
+        }
+
         $this->connection->insert($this->accounts_table, [
             'id' => $account_id,
             'status' => self::TRIAL,
-            'created_at' => $timestamp ?? new DateTimeValue(),
+            'created_at' => $timestamp,
             'mrr_value' => 0,
             'had_trial' => true,
-            'updated_at' => new DateTimeValue(),
+            'updated_at' => $timestamp,
         ]);
 
         return $this->insight->account($account_id);
@@ -129,7 +134,7 @@ class Accounts extends Metric implements AccountsInterface
             'created_at' => $created_at,
             'converted_to_free_at' => $converted_at,
             'mrr_value' => 0,
-            'updated_at' => new DateTimeValue(),
+            'updated_at' => $converted_at,
         ]);
 
         return $this->insight->account($account_id);
@@ -165,7 +170,7 @@ class Accounts extends Metric implements AccountsInterface
                 'plan' => get_class($plan),
                 'billing_period' => get_class($billing_period),
                 'mrr_value' => $mrr,
-                'updated_at' => new DateTimeValue(),
+                'updated_at' => $converted_at,
             ];
 
             if (empty($mrr)) {
@@ -225,7 +230,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account retireing timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `retired_at` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::RETIRED, $timestamp, 0, new DateTimeValue(), $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `retired_at` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::RETIRED, $timestamp, 0, $timestamp, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -268,7 +273,7 @@ class Accounts extends Metric implements AccountsInterface
                 throw new LogicException("Account cancelation timestamp can't be before creation timestamp");
             }
 
-            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::CANCELED, $timestamp, $reason, 0, new DateTimeValue(), $account_id);
+            $this->connection->execute("UPDATE `$this->accounts_table` SET `status` = ?, `canceled_at` = ?, `cancelation_reason` = ?, `mrr_value` = ?, `updated_at` = ? WHERE `id` = ?", AccountsInterface::CANCELED, $timestamp, $reason, 0, $timestamp, $account_id);
         } else {
             throw new InvalidArgumentException("Account #{$account_id} does not exist");
         }
@@ -283,14 +288,10 @@ class Accounts extends Metric implements AccountsInterface
     public function countActive(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::ACTIVE]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND `created_at` <= ? AND ((`retired_at` IS NULL OR DATE(`retired_at`) >= ?) AND (`canceled_at` IS NULL OR DATE(`canceled_at`) >= ?))', AccountsInterface::ACTIVE, $day, $day, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::ACTIVE, $day);
     }
 
     /**
@@ -300,14 +301,10 @@ class Accounts extends Metric implements AccountsInterface
     public function countTrials(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ? AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::TRIAL]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`had_trial` = ? AND `created_at` <= ? AND ((`converted_to_free_at` IS NULL OR DATE(`converted_to_free_at`) >= ?) AND (`converted_to_paid_at` IS NULL OR DATE(`converted_to_paid_at`) >= ?)) AND ((`retired_at` IS NULL OR DATE(`retired_at`) >= ?) AND (`canceled_at` IS NULL OR DATE(`canceled_at`) >= ?))', true, $day, $day, $day, $day, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::TRIAL, $day);
     }
 
     /**
@@ -319,14 +316,10 @@ class Accounts extends Metric implements AccountsInterface
     public function countFree(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['(`status` = ? OR DATE(`converted_to_free_at`) = ?) AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::FREE, $day]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['DATE(`converted_to_free_at`) <= ? AND ((`converted_to_paid_at` IS NULL OR DATE(`converted_to_paid_at`) >= ?) AND (`retired_at` IS NULL OR DATE(`retired_at`) >= ?) AND (`canceled_at` IS NULL OR DATE(`canceled_at`) >= ?))', $day, $day, $day, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::FREE, $day);
     }
 
     /**
@@ -338,14 +331,10 @@ class Accounts extends Metric implements AccountsInterface
     public function countPaid(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['(`status` = ? OR DATE(`converted_to_paid_at`) = ?) AND `retired_at` IS NULL AND `canceled_at` IS NULL', AccountsInterface::PAID, $day]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['DATE(`converted_to_paid_at`) <= ? AND ((`converted_to_free_at` IS NULL OR DATE(`converted_to_free_at`) >= ?) AND (`retired_at` IS NULL OR DATE(`retired_at`) >= ?) AND (`canceled_at` IS NULL OR DATE(`canceled_at`) >= ?))', $day, $day, $day, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::PAID, $day);
     }
 
     /**
@@ -355,14 +344,10 @@ class Accounts extends Metric implements AccountsInterface
     public function countRetired(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::RETIRED]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` IN ? AND DATE(`retired_at`) <= ?', AccountsInterface::NOT_ACTIVE, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::RETIRED, $day);
     }
 
     /**
@@ -372,13 +357,21 @@ class Accounts extends Metric implements AccountsInterface
     public function countCanceled(DateValueInterface $day = null): int
     {
         if (empty($day)) {
-            $day = new DateTimeValue();
+            $day = new DateValue();
         }
 
-        if ($day->isToday()) {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ?', AccountsInterface::CANCELED]);
-        } else {
-            return $this->connection->count($this->insight->getTableName('accounts'), ['`status` = ? AND DATE(`canceled_at`) <= ?', AccountsInterface::CANCELED, $day]);
-        }
+        return $this->countByStatusOnDay(AccountsInterface::CANCELED, $day);
+    }
+
+    /**
+     * Return number of accounts that were had a given status on a given day.
+     *
+     * @param  string|string[]    $statuses
+     * @param  DateValueInterface $day
+     * @return int
+     */
+    private function countByStatusOnDay($statuses, DateValueInterface $day): int
+    {
+        return $this->connection->executeFirstCell("SELECT COUNT(DISTINCT `account_id`) AS 'row_count' FROM {$this->insight->getTableName('account_status_spans')} WHERE `status` IN ? AND `started_on` <= ? AND (`ended_on` IS NULL OR `ended_on` >= ?)", (array) $statuses, $day, $day);
     }
 }

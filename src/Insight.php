@@ -268,7 +268,9 @@ class Insight implements InsightInterface
                         `ended_on` DATE DEFAULT NULL,
                         PRIMARY KEY (`id`),
                         KEY (`started_at`),
+                        KEY (`started_on`),
                         KEY (`ended_at`),
+                        KEY (`ended_on`),
                         FOREIGN KEY (`account_id`)
                             REFERENCES `$account_table` (`id`)
                             ON UPDATE CASCADE ON DELETE CASCADE

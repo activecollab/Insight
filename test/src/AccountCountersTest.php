@@ -60,7 +60,7 @@ class AccountCountersTest extends InsightTestCase
         $this->assertEquals(0, $this->insight->accounts->countActive(new DateValue('2016-02-11')));
         $this->assertEquals(1, $this->insight->accounts->countActive(new DateValue('2016-02-12')));
         $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-13')));
-        $this->assertEquals(2, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
+        $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-14')));
         $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-15')));
         $this->assertEquals(3, $this->insight->accounts->countActive(new DateValue('2016-02-16')));
     }
@@ -73,7 +73,7 @@ class AccountCountersTest extends InsightTestCase
         $this->insight->accounts->addTrial(1, new DateTimeValue('2016-02-12'));
         $this->insight->accounts->addTrial(2, new DateTimeValue('2016-02-13')); // Convert to paid on 2016-02-14
         $this->insight->accounts->addTrial(3, new DateTimeValue('2016-02-14')); // Convert to free on 2016-02-15
-        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15')); // Cancel
+        $this->insight->accounts->addTrial(4, new DateTimeValue('2016-02-15')); // Cancel on 2016-02-16
 
         $this->insight->accounts->changePlan(2, new PlanM(), new Yearly(), new DateTimeValue('2016-02-14'));
         $this->insight->accounts->changePlan(3, new FreePlan(), new None(), new DateTimeValue('2016-02-15'));
@@ -82,7 +82,7 @@ class AccountCountersTest extends InsightTestCase
         $this->current_timestamp = new DateTimeValue('2016-02-16');
         DateTimeValue::setTestNow($this->current_timestamp);
 
-        $this->assertEquals(1, $this->insight->accounts->countTrials());
+        $this->assertEquals(2, $this->insight->accounts->countTrials());
     }
 
     /**
