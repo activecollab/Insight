@@ -176,6 +176,8 @@ class Insight implements InsightInterface
         $prefixed_table_name = $this->getTablePrefix() . $table_name;
 
         if (!in_array($prefixed_table_name, $this->existing_tables)) {
+            $table_set_as_existing = false;
+
             switch ($table_name) {
                 case 'accounts':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
@@ -205,6 +207,11 @@ class Insight implements InsightInterface
                             SET NEW.cohort_month = MONTH(NEW.created_at);
                             SET NEW.cohort_year = YEAR(NEW.created_at);
                         END");
+
+                    $table_set_as_existing = $this->setTableAsExisting($prefixed_table_name);
+
+                    $this->getTableName('account_updates');
+                    $this->getTableName('account_status_spans');
 
                     break;
                 case 'account_updates':
@@ -244,6 +251,8 @@ class Insight implements InsightInterface
                                 );
                             END IF;
                         END");
+
+                    $table_set_as_existing = $this->setTableAsExisting($prefixed_table_name);
 
                     break;
                 case 'account_status_spans':
@@ -301,6 +310,8 @@ class Insight implements InsightInterface
                             END IF;
                         END");
 
+                    $table_set_as_existing = $this->setTableAsExisting($prefixed_table_name);
+
                     break;
                 case 'monthly_churn':
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
@@ -318,8 +329,8 @@ class Insight implements InsightInterface
 
                     break;
                 case 'churned_accounts':
-                    $monthly_churn_table = $this->getTableName('monthly_churn');
                     $account_table = $this->getTableName('accounts');
+                    $monthly_churn_table = $this->getTableName('monthly_churn');
 
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
@@ -442,10 +453,27 @@ class Insight implements InsightInterface
                     throw new InvalidArgumentException("Table '$table_name' is not known");
             }
 
-            $this->existing_tables[] = $prefixed_table_name;
+            if (!$table_set_as_existing) {
+                $this->setTableAsExisting($prefixed_table_name);
+            }
         }
 
         return $prefixed_table_name;
+    }
+
+    /**
+     * Set table as existing (after we create it).
+     *
+     * @param  string $prefixed_table_name
+     * @return bool
+     */
+    private function setTableAsExisting(string $prefixed_table_name): bool
+    {
+        if (!in_array($prefixed_table_name, $this->existing_tables)) {
+            $this->existing_tables[] = $prefixed_table_name;
+        }
+
+        return true;
     }
 
     /**

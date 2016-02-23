@@ -33,11 +33,13 @@ class ChurnTest extends InsightTestCase
 
         $table_names = $this->connection->getTableNames();
 
-        $this->assertCount(3, $table_names);
+        $this->assertCount(5, $table_names);
 
         $this->assertContains('insight_churned_accounts', $table_names);
         $this->assertContains('insight_monthly_churn', $table_names);
         $this->assertContains('insight_accounts', $table_names);
+        $this->assertContains('insight_account_status_spans', $table_names);
+        $this->assertContains('insight_account_updates', $table_names);
     }
 
     public function testCreateSnapshot()
