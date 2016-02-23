@@ -22,6 +22,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @property \ActiveCollab\Insight\AccountInsight\Metric\EventsInterface $events
+ * @property \ActiveCollab\Insight\AccountInsight\Metric\StatusTimelineInterface $status_timeline
  * @package ActiveCollab\Insight\AccountInsight
  */
 class AccountInsight implements AccountInsightInterface

@@ -270,7 +270,7 @@ class Insight implements InsightInterface
                     $this->connection->execute("CREATE TRIGGER `account_span_on_update` AFTER UPDATE ON `$account_table` FOR EACH ROW
                         BEGIN
                             IF NEW.status != OLD.status THEN
-                                UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id`;
+                                UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id` AND `ended_at` IS NULL;
                                 INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);
                             END IF;
                         END");
