@@ -20,7 +20,6 @@ use ActiveCollab\DateValue\DateValueInterface;
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\BillingPeriod\BillingPeriodInterface;
 use ActiveCollab\Insight\Plan\PlanInterface;
-use Carbon\Carbon;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
@@ -282,8 +281,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
+     * {@inheritdoc}
      */
     public function countActive(DateValueInterface $day = null): int
     {
@@ -295,8 +293,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
+     * {@inheritdoc}
      */
     public function countTrials(DateValueInterface $day = null): int
     {
@@ -308,10 +305,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
-     *
-     * @todo Support stretches of time, with gaps, changes and switches.
+     * {@inheritdoc}
      */
     public function countFree(DateValueInterface $day = null): int
     {
@@ -323,10 +317,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
-     *
-     * @todo Support stretches of time, with gaps, changes and switches.
+     * {@inheritdoc}
      */
     public function countPaid(DateValueInterface $day = null): int
     {
@@ -338,8 +329,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
+     * {@inheritdoc}
      */
     public function countRetired(DateValueInterface $day = null): int
     {
@@ -351,8 +341,7 @@ class Accounts extends Metric implements AccountsInterface
     }
 
     /**
-     * @param  DateValueInterface|Carbon|null $day
-     * @return int
+     * {@inheritdoc}
      */
     public function countCanceled(DateValueInterface $day = null): int
     {
