@@ -12,6 +12,7 @@
 namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\DateValue\DateTimeValue;
+use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Metric\AccountsInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
@@ -61,7 +62,9 @@ class AccountStatusSpansTest extends InsightTestCase
         $this->assertEquals(1, $row['account_id']);
         $this->assertEquals(AccountsInterface::TRIAL, $row['status']);
         $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
         $this->assertNull($row['ended_at']);
+        $this->assertNull($row['ended_on']);
     }
 
     /**
@@ -88,7 +91,9 @@ class AccountStatusSpansTest extends InsightTestCase
         $this->assertEquals(1, $row['account_id']);
         $this->assertEquals(AccountsInterface::TRIAL, $row['status']);
         $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
         $this->assertInstanceOf(DateTimeValue::class, $row['ended_at']);
+        $this->assertInstanceOf(DateValue::class, $row['ended_on']);
 
         $row = $this->connection->executeFirstRow("SELECT * FROM `$account_status_spans_table` WHERE `id` = ?", 2);
 
@@ -97,7 +102,49 @@ class AccountStatusSpansTest extends InsightTestCase
         $this->assertEquals(1, $row['account_id']);
         $this->assertEquals(AccountsInterface::PAID, $row['status']);
         $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
         $this->assertEmpty($row['ended_at']);
+        $this->assertEmpty($row['ended_on']);
+    }
+
+    /**
+     * Test if trigger properly sets date value based on start date and time.
+     */
+    public function testInsertUpdatesDateValue()
+    {
+        $account_status_spans_table = $this->insight->getTableName('account_status_spans');
+        $this->insight->accounts->addTrial(1);
+
+        $row = $this->connection->executeFirstRow("SELECT `started_at`, `started_on` FROM `$account_status_spans_table`");
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertEquals($row['started_at']->format('Y-m-d'), $row['started_on']->format('Y-m-d'));
+    }
+
+    /**
+     * Test if trigger properly sets date value based on end date and time.
+     */
+    public function testUpdateUpdatesDateValue()
+    {
+        $account_status_spans_table = $this->insight->getTableName('account_status_spans');
+
+        $this->insight->accounts->addTrial(1);
+        $this->insight->accounts->changePlan(1, new PlanM(), new Yearly());
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_status_spans_table` WHERE `id` = ?", 1);
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertEquals($row['started_at']->format('Y-m-d'), $row['started_on']->format('Y-m-d'));
+
+        $this->assertInstanceOf(DateTimeValue::class, $row['ended_at']);
+        $this->assertInstanceOf(DateValue::class, $row['ended_on']);
+        $this->assertEquals($row['ended_at']->format('Y-m-d'), $row['ended_on']->format('Y-m-d'));
     }
 
     /**
