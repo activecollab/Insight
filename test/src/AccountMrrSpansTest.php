@@ -16,7 +16,9 @@ use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Monthly;
 use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\None;
+use ActiveCollab\Insight\Test\Fixtures\BillingPeriod\Yearly;
 use ActiveCollab\Insight\Test\Fixtures\Plan\FreePlan;
+use ActiveCollab\Insight\Test\Fixtures\Plan\PlanL;
 use ActiveCollab\Insight\Test\Fixtures\Plan\PlanM;
 
 /**
@@ -109,5 +111,146 @@ class AccountMrrSpansTest extends InsightTestCase
         $this->assertInstanceOf(DateValue::class, $row['started_on']);
         $this->assertNull($row['ended_at']);
         $this->assertNull($row['ended_on']);
+    }
+
+    /**
+     * Test if trial to paid conversion creates a new MRR span.
+     */
+    public function testTrialToPaidCreatesMrrSpan()
+    {
+        $account_mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
+
+        $this->assertEquals(0, $this->connection->count($account_mrr_spans_table));
+
+        $this->insight->accounts->addTrial(1);
+        $this->insight->accounts->changePlan(1, new PlanL(), new Monthly());
+
+        $this->assertEquals(1, $this->connection->count($account_mrr_spans_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table`");
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanL())->getMrrValue(new Monthly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertNull($row['ended_at']);
+        $this->assertNull($row['ended_on']);
+    }
+
+    /**
+     * Test if free to paid creates a new MRR span.
+     */
+    public function testFreeToPaidCreatesMrrSpan()
+    {
+        $account_mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
+
+        $this->assertEquals(0, $this->connection->count($account_mrr_spans_table));
+
+        $this->insight->accounts->addFree(1, new FreePlan());
+        $this->insight->accounts->changePlan(1, new PlanM(), new Yearly());
+
+        $this->assertEquals(1, $this->connection->count($account_mrr_spans_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table`");
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanM())->getMrrValue(new Yearly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertNull($row['ended_at']);
+        $this->assertNull($row['ended_on']);
+    }
+
+    /**
+     * Test if change from paid account to another closes old MRR span, and opens a new one.
+     */
+    public function testPaidPlanChangeClosesPreviousAndCreatesNewMrrSpan()
+    {
+        $account_mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
+
+        $this->assertEquals(0, $this->connection->count($account_mrr_spans_table));
+
+        $this->insight->accounts->addPaid(1, new PlanL(), new Monthly());
+        $this->insight->accounts->changePlan(1, new PlanM(), new Yearly());
+
+        $this->assertEquals(2, $this->connection->count($account_mrr_spans_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table` WHERE `id` = ?", 1);
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanL())->getMrrValue(new Monthly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['ended_at']);
+        $this->assertInstanceOf(DateValue::class, $row['ended_on']);
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table` WHERE `id` = ?", 2);
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanM())->getMrrValue(new Yearly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertNull($row['ended_at']);
+        $this->assertNull($row['ended_on']);
+    }
+
+    /**
+     * Test if retiering of a paid account closes existing MRR span.
+     */
+    public function testRetirePaidAccountClosesMrrSpan()
+    {
+        $account_mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
+
+        $this->assertEquals(0, $this->connection->count($account_mrr_spans_table));
+
+        $this->insight->accounts->addPaid(1, new PlanM(), new Monthly());
+        $this->insight->accounts->retire(1);
+
+        $this->assertEquals(1, $this->connection->count($account_mrr_spans_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table`");
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanM())->getMrrValue(new Monthly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['ended_at']);
+        $this->assertInstanceOf(DateValue::class, $row['ended_on']);
+    }
+
+    /**
+     * Test if cancelation of a paid account closes existing MRR span.
+     */
+    public function testCancelPaidAccountClosesMrrSpan()
+    {
+        $account_mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
+
+        $this->assertEquals(0, $this->connection->count($account_mrr_spans_table));
+
+        $this->insight->accounts->addPaid(1, new PlanM(), new Monthly());
+        $this->insight->accounts->cancel(1);
+
+        $this->assertEquals(1, $this->connection->count($account_mrr_spans_table));
+
+        $row = $this->connection->executeFirstRow("SELECT * FROM `$account_mrr_spans_table`");
+
+        $this->assertInternalType('array', $row);
+
+        $this->assertEquals(1, $row['account_id']);
+        $this->assertEquals((new PlanM())->getMrrValue(new Monthly()), $row['mrr_value']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['started_at']);
+        $this->assertInstanceOf(DateValue::class, $row['started_on']);
+        $this->assertInstanceOf(DateTimeValue::class, $row['ended_at']);
+        $this->assertInstanceOf(DateValue::class, $row['ended_on']);
     }
 }
