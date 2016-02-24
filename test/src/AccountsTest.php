@@ -180,7 +180,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(2015, $row['cohort_year']);
         $this->assertEquals(12, $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
-        $this->assertEquals(499, $row['mrr_value']);
+        $this->assertEquals(41.583, $row['mrr_value']);
     }
 
     /**
@@ -201,7 +201,7 @@ class AccountsTest extends InsightTestCase
         $this->assertEquals(date('Y'), $row['cohort_year']);
         $this->assertEquals(date('m'), $row['cohort_month']);
         $this->assertNull($row['canceled_at']);
-        $this->assertEquals(499, $row['mrr_value']);
+        $this->assertEquals(41.583, $row['mrr_value']);
         $this->assertFalse($row['had_trial']);
     }
 

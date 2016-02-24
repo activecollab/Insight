@@ -84,7 +84,7 @@ class AccountMrrTimelineTest extends InsightTestCase
         $this->assertEquals('2016-01-24 14:14:14', $timeline[1]['started_at']->format('Y-m-d H:i:s'));
         $this->assertEquals('2016-01-27 15:15:15', $timeline[1]['ended_at']->format('Y-m-d H:i:s'));
 
-        $this->assertSame(499.00, $timeline[2]['mrr_value']);
+        $this->assertSame(41.583, $timeline[2]['mrr_value']);
         $this->assertEquals('2016-01-18 13:13:13', $timeline[2]['started_at']->format('Y-m-d H:i:s'));
         $this->assertEquals('2016-01-24 14:14:14', $timeline[2]['ended_at']->format('Y-m-d H:i:s'));
     }
