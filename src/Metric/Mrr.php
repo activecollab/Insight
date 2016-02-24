@@ -49,19 +49,5 @@ class Mrr extends Metric implements MrrInterface
                     WHERE `started_on` <= ? AND (`ended_on` IS NULL OR `ended_on` >= ?)
                     GROUP BY `account_id`
             ) AS grouped_tt ON tt.`account_id` = grouped_tt.`account_id` AND tt.`started_at` = grouped_tt.max_started_at", $day, $day));
-
-//        if ($rows) {
-////            if ($day->format('Y-m-d') === '2016-01-17') {
-////                var_dump($rows->toArray());
-////            }
-//
-//            $result = 0;
-//
-//            foreach ($rows as $row) {
-//                $result += (float) $row['mrr_value'];
-//            }
-//
-//            return ceil($result);
-//        }
     }
 }
