@@ -302,11 +302,11 @@ class Insight implements InsightInterface
                             END IF;
                         END");
 
-                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_insert_create_span`');
-                    $this->connection->execute("CREATE TRIGGER `account_insert_create_span` AFTER INSERT ON `$account_table` FOR EACH ROW INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);");
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_insert_create_status_span`');
+                    $this->connection->execute("CREATE TRIGGER `account_insert_create_status_span` AFTER INSERT ON `$account_table` FOR EACH ROW INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);");
 
-                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_update_create_span`');
-                    $this->connection->execute("CREATE TRIGGER `account_update_create_span` AFTER UPDATE ON `$account_table` FOR EACH ROW
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_update_create_status_span`');
+                    $this->connection->execute("CREATE TRIGGER `account_update_create_status_span` AFTER UPDATE ON `$account_table` FOR EACH ROW
                         BEGIN
                             IF NEW.status != OLD.status THEN
                                 UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id` AND `ended_at` IS NULL;
@@ -359,6 +359,28 @@ class Insight implements InsightInterface
                             
                             IF NEW.ended_at IS NOT NULL THEN
                                 SET NEW.ended_on = DATE(NEW.ended_at);
+                            END IF;
+                        END");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_insert_create_mrr_span`');
+                    $this->connection->execute("CREATE TRIGGER `account_insert_create_mrr_span` AFTER INSERT ON `$account_table` FOR EACH ROW 
+                        BEGIN
+                            IF NEW.mrr_value > 0 THEN
+                                INSERT INTO `$prefixed_table_name` (`account_id`, `mrr_value`, `started_at`) VALUES (NEW.`id`, NEW.`mrr_value`, NEW.`updated_at`);
+                            END IF;
+                        END");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_update_create_mrr_span`');
+                    $this->connection->execute("CREATE TRIGGER `account_update_create_mrr_span` AFTER UPDATE ON `$account_table` FOR EACH ROW
+                        BEGIN
+                            IF NEW.mrr_value != OLD.mrr_value THEN
+                                IF OLD.mrr_value > 0 THEN
+                                    UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id` AND `ended_at` IS NULL;
+                                END IF;
+                            
+                                IF NEW.mrr_value > 0 THEN
+                                    INSERT INTO `$prefixed_table_name` (`account_id`, `mrr_value`, `started_at`) VALUES (NEW.`id`, NEW.`mrr_value`, NEW.`updated_at`);
+                                END IF;
                             END IF;
                         END");
 
