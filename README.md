@@ -9,8 +9,8 @@ An account can have following statuses:
 1. **Trial** - User is in trial mode. Conversion or cancelation is expected. If not, we'll consider an account as retired.
 2. **Free** - User is using an account in free mode. What this means to your app may very, but from Insight's perspective, it means that you have 0 MRR from this account,
 3. **Paid** - User is paying for the service. MRR must exist (and we all know that MRR is good for business),
-4. **Retired** - Account got archived because of "neglect" (user stopped testing the software, or paying, but did not cancel; payment failed and user did not update billing info etc),
-5. **Canceled** - Account is archived (or even completely removed) because on user's request.
+4. **Retired** - Account got archived because of "neglect" (user stopped testing the software, or paying, but did not convert or cancel; payment failed and user did not update billing info etc),
+5. **Canceled** - Account is archived (or even completely removed) because user request that.
 
 ## Metrics
 
@@ -21,10 +21,13 @@ By adding account data as important account events happen, Insight will be able 
 3. Various timelines for accounts (status changes, MRR changes, plan and billing period changes)
 4. Monthly Recurring Revenue (MMR)
 5. Average Revenue per User (ARPU)
+6. Churn Rate (coming soon)
+7. Customer Lifetime (coming soon)
+8. Customer Lifetime Value (coming soon)
 
 ### MRR
 
-Monthly Recurring Revenue (MMR) shows how much revenue can you expect to get each month from your users. It's calculated as sum of MRR values of each paying account on a given day. To get the value, simply call:
+Monthly Recurring Revenue (MMR) shows how much revenue are you getting each month from your users. It's calculated as sum of MRR values of each paying account on a given day. To get the value, simply call:
 
 ```php
 $insight->accounts->mrr->getOnDay(); // Today
