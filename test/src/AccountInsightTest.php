@@ -13,6 +13,7 @@ namespace ActiveCollab\Insight\Test;
 
 use ActiveCollab\Insight\AccountInsight\AccountInsightInterface;
 use ActiveCollab\Insight\AccountInsight\Metric\EventsInterface;
+use ActiveCollab\Insight\AccountInsight\Metric\StatusTimelineInterface;
 use ActiveCollab\Insight\Test\Base\InsightTestCase;
 
 /**
@@ -34,6 +35,7 @@ class AccountInsightTest extends InsightTestCase
     public function testGetSupportedMetrics()
     {
         $this->assertInstanceOf(EventsInterface::class, $this->insight->account(1)->events);
+        $this->assertInstanceOf(StatusTimelineInterface::class, $this->insight->account(1)->status_timeline);
     }
 
     /**

@@ -212,6 +212,7 @@ class Insight implements InsightInterface
 
                     $this->getTableName('account_updates');
                     $this->getTableName('account_status_spans');
+                    $this->getTableName('account_mrr_spans');
 
                     break;
                 case 'account_updates':
@@ -260,13 +261,14 @@ class Insight implements InsightInterface
 
                     $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
-                        `account_id` int unsigned NOT NULL DEFAULT '0',
+                        `account_id` int unsigned NOT NULL,
                         `status` ENUM ? DEFAULT NULL,
                         `started_at` DATETIME NOT NULL,
                         `started_on` DATE NOT NULL,
                         `ended_at` DATETIME DEFAULT NULL,
                         `ended_on` DATE DEFAULT NULL,
                         PRIMARY KEY (`id`),
+                        KEY (`status`),
                         KEY (`started_at`),
                         KEY (`started_on`),
                         KEY (`ended_at`),
@@ -276,8 +278,8 @@ class Insight implements InsightInterface
                             ON UPDATE CASCADE ON DELETE CASCADE
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", AccountsInterface::STATUSES);
 
-                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_span_on_insert`');
-                    $this->connection->execute("CREATE TRIGGER `account_span_on_insert` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_status_span_on_insert`');
+                    $this->connection->execute("CREATE TRIGGER `account_status_span_on_insert` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
                         BEGIN
                             IF NEW.started_at IS NOT NULL THEN
                                 SET NEW.started_on = DATE(NEW.started_at);
@@ -288,8 +290,8 @@ class Insight implements InsightInterface
                             END IF;
                         END");
 
-                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_span_on_update`');
-                    $this->connection->execute("CREATE TRIGGER `account_span_on_update` BEFORE UPDATE ON `$prefixed_table_name` FOR EACH ROW
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_status_span_on_update`');
+                    $this->connection->execute("CREATE TRIGGER `account_status_span_on_update` BEFORE UPDATE ON `$prefixed_table_name` FOR EACH ROW
                         BEGIN
                             IF NEW.started_at IS NOT NULL THEN
                                 SET NEW.started_on = DATE(NEW.started_at);
@@ -309,6 +311,54 @@ class Insight implements InsightInterface
                             IF NEW.status != OLD.status THEN
                                 UPDATE `$prefixed_table_name` SET `ended_at` = NEW.`updated_at` WHERE `account_id` = NEW.`id` AND `ended_at` IS NULL;
                                 INSERT INTO `$prefixed_table_name` (`account_id`, `status`, `started_at`) VALUES (NEW.`id`, NEW.`status`, NEW.`updated_at`);
+                            END IF;
+                        END");
+
+                    $table_set_as_existing = $this->setTableAsExisting($prefixed_table_name);
+
+                    break;
+                case 'account_mrr_spans':
+                    $account_table = $this->getTableName('accounts');
+
+                    $this->connection->execute("CREATE TABLE IF NOT EXISTS `$prefixed_table_name` (
+                        `id` int unsigned NOT NULL AUTO_INCREMENT,
+                        `account_id` int unsigned NOT NULL,
+                        `mrr_value` DECIMAL(13,3) unsigned NOT NULL,
+                        `started_at` DATETIME NOT NULL,
+                        `started_on` DATE NOT NULL,
+                        `ended_at` DATETIME DEFAULT NULL,
+                        `ended_on` DATE DEFAULT NULL,
+                        PRIMARY KEY (`id`),
+                        KEY (`started_at`),
+                        KEY (`started_on`),
+                        KEY (`ended_at`),
+                        KEY (`ended_on`),
+                        FOREIGN KEY (`account_id`)
+                            REFERENCES `$account_table` (`id`)
+                            ON UPDATE CASCADE ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_mrr_span_on_insert`');
+                    $this->connection->execute("CREATE TRIGGER `account_mrr_span_on_insert` BEFORE INSERT ON `$prefixed_table_name` FOR EACH ROW
+                        BEGIN
+                            IF NEW.started_at IS NOT NULL THEN
+                                SET NEW.started_on = DATE(NEW.started_at);
+                            END IF;
+                            
+                            IF NEW.ended_at IS NOT NULL THEN
+                                SET NEW.ended_on = DATE(NEW.ended_at);
+                            END IF;
+                        END");
+
+                    $this->connection->execute('DROP TRIGGER IF EXISTS `account_mrr_span_on_update`');
+                    $this->connection->execute("CREATE TRIGGER `account_mrr_span_on_update` BEFORE UPDATE ON `$prefixed_table_name` FOR EACH ROW
+                        BEGIN
+                            IF NEW.started_at IS NOT NULL THEN
+                                SET NEW.started_on = DATE(NEW.started_at);
+                            END IF;
+                            
+                            IF NEW.ended_at IS NOT NULL THEN
+                                SET NEW.ended_on = DATE(NEW.ended_at);
                             END IF;
                         END");
 

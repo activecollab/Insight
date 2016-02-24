@@ -33,15 +33,19 @@ class ChurnTest extends InsightTestCase
 
         $table_names = $this->connection->getTableNames();
 
-        $this->assertCount(5, $table_names);
+        $this->assertCount(6, $table_names);
 
         $this->assertContains('insight_churned_accounts', $table_names);
         $this->assertContains('insight_monthly_churn', $table_names);
         $this->assertContains('insight_accounts', $table_names);
         $this->assertContains('insight_account_status_spans', $table_names);
+        $this->assertContains('insight_account_mrr_spans', $table_names);
         $this->assertContains('insight_account_updates', $table_names);
     }
 
+    /**
+     * Test create churn snapshot for a given month.
+     */
     public function testCreateSnapshot()
     {
         $this->insight->churn->snapshot(new DateValue('2016-02-22'), 100, 10000);
@@ -114,5 +118,40 @@ class ChurnTest extends InsightTestCase
 //
 //        $this->insight->churn->snapshot(new DateValue('2016-02-01'));
 //        $this->insight->churn->churn(1, new DateValue('2016-02-12'));
+//    }
+//
+//    public function testRetireTrialDoesNotRecordChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testCancelTrialDoesNotRecordChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testRetireFreeAccountDoesNotRecordsChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testCancelFreeAccountDoesNotRecordsChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testRetirePaidAccountRecordsChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testCancelPaidAccountRecordsChurn()
+//    {
+//        $this->fail('Implement');
+//    }
+//
+//    public function testCancelRetiredAccountDoesNotRecordChurn()
+//    {
+//        $this->fail('Implement');
 //    }
 }
