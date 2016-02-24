@@ -11,22 +11,25 @@
 
 namespace ActiveCollab\Insight\AccountInsight\Metric;
 
+use ActiveCollab\DatabaseConnection\Record\ValueCaster;
+use ActiveCollab\DatabaseConnection\Record\ValueCasterInterface;
+
 /**
  * @package ActiveCollab\Insight\AccountInsight\Metric
  */
-class StatusTimeline extends Metric implements StatusTimelineInterface
+class MrrTimeline extends Metric implements MrrTimelineInterface
 {
     /**
      * @var string
      */
-    private $status_spans_table;
+    private $mrr_spans_table;
 
     /**
      * {@inheritdoc}
      */
     protected function configure()
     {
-        $this->status_spans_table = $this->insight->getTableName('account_status_spans');
+        $this->mrr_spans_table = $this->insight->getTableName('account_mrr_spans');
     }
 
     /**
@@ -34,12 +37,12 @@ class StatusTimeline extends Metric implements StatusTimelineInterface
      */
     public function get()
     {
-        $result = $this->connection->execute("SELECT `status`, `started_at`, `ended_at` FROM {$this->status_spans_table} WHERE `account_id` = ? ORDER BY `started_at` DESC", $this->account->getAccountId());
+        $result = $this->connection->execute("SELECT `mrr_value`, `started_at`, `ended_at` FROM {$this->mrr_spans_table} WHERE `account_id` = ? ORDER BY `started_at` DESC", $this->account->getAccountId());
 
         if (empty($result)) {
             $result = [];
         } else {
-            $result = $result->toArray();
+            return $result->setValueCaster(new ValueCaster(['mrr_value' => ValueCasterInterface::CAST_FLOAT]))->toArray();
         }
 
         return $result;
