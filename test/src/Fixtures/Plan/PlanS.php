@@ -28,7 +28,7 @@ class PlanS extends PaidPlan
             case BillingPeriodInterface::MONTHLY:
                 return 25;
             case BillingPeriodInterface::YEARLY:
-                return 250;
+                return round(250 / 12, 3);
             default:
                 throw new RuntimeException("Value '{$billing_period->getBillingPeriod()} is not a valid billing period for paid plans");
         }
