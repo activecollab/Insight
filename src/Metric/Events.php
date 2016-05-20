@@ -9,8 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-defined('BASE_PATH') || define('BASE_PATH', realpath(__DIR__));
+namespace ActiveCollab\Insight\Metric;
 
-date_default_timezone_set('GMT');
-
-require dirname(__DIR__) . '/vendor/autoload.php';
+/**
+ * @package ActiveCollab\Insight\Metric
+ */
+class Events extends Metric implements EventsInterface
+{
+}

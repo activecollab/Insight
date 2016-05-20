@@ -2,29 +2,51 @@
 
 [![Build Status](https://travis-ci.org/activecollab/Insight.svg?branch=master)](https://travis-ci.org/activecollab/Insight)
 
-Insight is build around concept of an account that can be enriched with following components:
+## Account Status
 
-1. Properties       - track different account properties and how they change through time
-2. System logs      - keep track of system logs that are useful for supporting your users
-3. Events           - track important (they can repeat)
-4. Goals            - set goals and see which accounts reach them
-5. Dataset timeline - track changes to the size of account's dataset (a la Git's ++ and --)
+An account can have following statuses:
 
-## Dateset timeline
+1. **Trial** - User is in trial mode. Conversion or cancelation is expected. If not, we'll consider an account as retired.
+2. **Free** - User is using an account in free mode. What this means to your app may very, but from Insight's perspective, it means that you have 0 MRR from this account,
+3. **Paid** - User is paying for the service. MRR must exist (and we all know that MRR is good for business),
+4. **Retired** - Account got archived because of "neglect" (user stopped testing the software, or paying, but did not convert or cancel; payment failed and user did not update billing info etc),
+5. **Canceled** - Account is archived (or even completely removed) because user request that.
 
-Dataset timeline tracks four events:
+## Metrics
 
-1. Additions (or ++) - a new object has been added
-2. Unarchives (or +) - something that was archived is active again
-3. Archives (or -) - something active is now moved to archive (not deleted, but no loger active)
-4. Deletions (or --) - permanent removal of an object from the database
+By adding account data as important account events happen, Insight will be able to provide following numbers:
 
-When these numbers are collected, you should be able to create a timeline where you see how data set changed over time. These changes can indicate how engaged the users are with your product.
+1. Conversion rate (visitors to trial as first step, and trial to paid as second step),
+2. Number of trial, free, paid, retired and canceled accounts on each day,
+3. Various timelines for accounts (status changes, MRR changes, plan and billing period changes)
+4. Monthly Recurring Revenue (MMR)
+5. Average Revenue per User (ARPU)
+6. Churn Rate (coming soon)
+7. Customer Lifetime (coming soon)
+8. Customer Lifetime Value (coming soon)
 
-## Events
+### MRR
 
-The key difference between events and log entries is that events are kept indefinitely.
+Monthly Recurring Revenue (MMR) shows how much revenue are you getting each month from your users. It's calculated as sum of MRR values of each paying account on a given day. To get the value, simply call:
 
-## Goals
+```php
+$insight->accounts->mrr->getOnDay(); // Today
+$insight->accounts->mrr->getOnDay(new DateValue('2016-02-22')); // Specific day
+```
 
-The key difference between goals and events is that goals can be reached only once, and at this point status of a user changes (for exactly, trial user becomes a customer by paying).
+### ARPU
+
+Average Revenue per User (ARPU) shows you how much monthly revenue do you get per user on average. You can grow your business quite a bit by focusing on increase of ARPU (using upgrades, plan changes etc), so it's good to keep an eye on this number. To get the value, call:
+
+```php
+$insight->accounts->arpu->getOnDay(); // Today
+$insight->accounts->arpu->getOnDay(new DateValue('2016-02-22')); // Specific day
+```
+
+## Running Tests
+
+`cd` to this directory and run:
+
+```bash
+phpunit
+```
