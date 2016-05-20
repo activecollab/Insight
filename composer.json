@@ -2,7 +2,9 @@
     "name": "activecollab/insight",
     "type": "library",
     "description": "Simple user engagement tracking library",
-    "prefer-stable": true,
+    "license": "MIT",
+    "type": "library",
+    "minimum-stability": "stable",
     "keywords": [
         "user",
         "engagement",
