@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e7c2d19465147d4efd7e7bbe4b9402ee",
-    "content-hash": "dd3839c3c2d90d1f27e7aa0639000b7e",
+    "hash": "bb65e31206efff795565a132aaf9228b",
+    "content-hash": "a1cd11bdc50b1c224963dd73aa1e3b5f",
     "packages": [
         {
             "name": "activecollab/containeraccess",
@@ -2049,9 +2049,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": [],
-    "prefer-stable": true,
+    "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.0.0"

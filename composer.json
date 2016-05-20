@@ -1,6 +1,5 @@
 {
     "name": "activecollab/insight",
-    "type": "library",
     "description": "Simple user engagement tracking library",
     "license": "MIT",
     "type": "library",
@@ -30,7 +29,6 @@
         "monolog/monolog": "~1.17.0",
         "phpunit/phpunit": "^5.0"
     },
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "ActiveCollab\\Insight\\": "src",
