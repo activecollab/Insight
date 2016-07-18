@@ -11,6 +11,6 @@
 
 defined('BASE_PATH') || define('BASE_PATH', realpath(__DIR__));
 
-date_default_timezone_set('GMT');
+date_default_timezone_set('UTC');
 
 require dirname(__DIR__) . '/vendor/autoload.php';
