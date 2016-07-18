@@ -1,6 +1,6 @@
 # Insight
 
-[![Build Status](https://travis-ci.org/activecollab/Insight.svg?branch=master)](https://travis-ci.org/activecollab/Insight)
+[![Build Status](https://travis-ci.org/activecollab/Insight.svg?branch=master)](https://travis-ci.org/activecollab/insight)
 
 ## Account Status
 
