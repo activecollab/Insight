@@ -25,9 +25,9 @@
         "psr/log": "~1.0"
     },
     "require-dev": {
-        "fabpot/php-cs-fixer": "~1.0",
-        "monolog/monolog": "~1.17.0",
-        "phpunit/phpunit": "^5.0"
+        "friendsofphp/php-cs-fixer": "~1.11.5",
+        "monolog/monolog": "~1.20.0",
+        "phpunit/phpunit": "^5.4"
     },
     "autoload": {
         "psr-4": {
