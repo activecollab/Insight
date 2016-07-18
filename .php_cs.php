@@ -30,7 +30,7 @@ return (new Symfony\CS\Config\Config('psr2'))->fixers([
     'join_function',
     'multiline_array_trailing_comma',
     'namespace_no_leading_whitespace',
-    'no_blank_lines_after_class_opening ',
+    'no_blank_lines_after_class_opening',
     'no_empty_lines_after_phpdocs',
     'phpdoc_scalar',
     'phpdoc_short_description',
