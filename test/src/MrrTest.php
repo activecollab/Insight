@@ -69,9 +69,9 @@ class MrrTest extends InsightTestCase
 
         $this->insight->accounts->cancel(1);
 
-        $m_monthly_mrr = (int) ceil((new PlanM)->getMrrValue(new Monthly()));
-        $m_yearly_mrr = (int) ceil((new PlanM)->getMrrValue(new Yearly()));
-        $l_monthly_mrr = (int) ceil((new PlanL)->getMrrValue(new Monthly()));
+        $m_monthly_mrr = (int) ceil((new PlanM())->getMrrValue(new Monthly()));
+        $m_yearly_mrr = (int) ceil((new PlanM())->getMrrValue(new Yearly()));
+        $l_monthly_mrr = (int) ceil((new PlanL())->getMrrValue(new Monthly()));
 
         $this->assertEquals(0, $this->insight->mrr->getOnDay(new DateValue('2016-01-12')));
         $this->assertEquals(0, $this->insight->mrr->getOnDay(new DateValue('2016-01-13')));

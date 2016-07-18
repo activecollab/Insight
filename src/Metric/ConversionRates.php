@@ -18,11 +18,11 @@ use ActiveCollab\DatabaseConnection\Record\ValueCaster;
 use ActiveCollab\DatabaseConnection\Record\ValueCasterInterface;
 use ActiveCollab\DateValue\DateValue;
 use ActiveCollab\DateValue\DateValueInterface;
+use DateInterval;
+use DatePeriod;
+use DateTime;
 use Exception;
 use InvalidArgumentException;
-use DatePeriod;
-use DateInterval;
-use DateTime;
 
 /**
  * @package ActiveCollab\Insight\Metric
